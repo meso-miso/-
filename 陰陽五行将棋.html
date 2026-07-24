@@ -651,6 +651,8 @@
   .wall-piece.fire-attr { border-color: #e05040; color: #e05040; background: rgba(210,60,40,0.2); }
   /* 青龍の軌跡壁：木の術の壁と区別（緑・破線・次に青龍が動くと消える） */
   .wall-piece.trail-wall { border-style: dashed; border-color: #6fbf73; color: #8fd894; background: rgba(70,150,80,0.16); }
+  /* 樹海が茂らせた壁：深い緑の実線（青龍の軌跡＝破線とは別物） */
+  .wall-piece.jukai-wall { border-color: #3f8f4f; color: #a8dfa8; background: rgba(40,110,50,0.3); }
 
   .cell.wall-placeable { background: rgba(100,180,80,0.4); }
   .cell.fusion-base { background: rgba(200,120,220,0.5); box-shadow: inset 0 0 8px rgba(220,150,240,0.8); }
@@ -666,7 +668,69 @@
   .fusion-cell.mei { box-shadow: inset 0 0 0 2px var(--silver); }
   .fusion-label { letter-spacing: 0.05em; }
   @keyframes bannerPop { 0% { transform: scale(0.6); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
+  /* 効果を発動した結界から出る吹き出し（何が起きたかを盤上で直接伝える） */
+  .kekkai-bubble {
+    position: absolute; left: 50%; bottom: calc(100% + 10px);
+    transform: translateX(-50%);
+    z-index: 40; pointer-events: none;
+    min-width: 130px; max-width: 220px;
+    padding: 8px 11px; border-radius: 8px;
+    background: rgba(18,14,10,0.96);
+    border: 2px solid var(--kekkai-color, #e0b8f0);
+    box-shadow: 0 0 14px 2px var(--kekkai-color, rgba(230,190,255,0.55)), 0 4px 12px rgba(0,0,0,0.6);
+    color: #f2e8d0; font-size: 0.72rem; line-height: 1.5; text-align: center;
+    white-space: normal; word-break: keep-all;
+    animation: kekkaiBubble 2.4s ease-out forwards;
+  }
+  /* 吹き出しの尻尾（下向き） */
+  .kekkai-bubble::after {
+    content: ''; position: absolute; top: 100%; left: 50%; transform: translateX(-50%);
+    border: 7px solid transparent; border-top-color: var(--kekkai-color, #e0b8f0);
+  }
+  .kekkai-bubble::before {
+    content: ''; position: absolute; top: calc(100% - 2px); left: 50%; transform: translateX(-50%);
+    border: 6px solid transparent; border-top-color: rgba(18,14,10,0.96); z-index: 1;
+  }
+  .kekkai-bubble .kb-name { display:block; font-size:0.68rem; letter-spacing:0.1em; color: var(--kekkai-color, #e0b8f0); margin-bottom:2px; }
+  /* 盤の上端に近いときは下向きに出す（画面外へはみ出さないように） */
+  .kekkai-bubble.below { bottom: auto; top: calc(100% + 10px); }
+  .kekkai-bubble.below::after { top: auto; bottom: 100%; border-top-color: transparent; border-bottom-color: var(--kekkai-color, #e0b8f0); }
+  .kekkai-bubble.below::before { top: auto; bottom: calc(100% - 2px); border-top-color: transparent; border-bottom-color: rgba(18,14,10,0.96); }
+  @keyframes kekkaiBubble {
+    0%   { transform: translateX(-50%) translateY(10px) scale(0.7); opacity: 0; }
+    12%  { transform: translateX(-50%) translateY(-3px) scale(1.06); opacity: 1; }
+    22%  { transform: translateX(-50%) translateY(0) scale(1); opacity: 1; }
+    82%  { transform: translateX(-50%) translateY(0) scale(1); opacity: 1; }
+    100% { transform: translateX(-50%) translateY(-8px) scale(0.95); opacity: 0; }
+  }
+  /* 結界（合体駒）の効果発動：駒が輝き、外へ波紋が広がる。盤を隠さない程度の華やかさ */
+  .fusion-cell.kekkai-active {
+    animation: kekkaiGlow 1.1s ease-out;
+    z-index: 5;
+  }
+  @keyframes kekkaiGlow {
+    0%   { filter: brightness(1); box-shadow: none; }
+    18%  { filter: brightness(2.1) saturate(1.5); box-shadow: 0 0 18px 6px var(--kekkai-color, rgba(230,190,255,0.95)), inset 0 0 12px rgba(255,255,255,0.8); }
+    45%  { filter: brightness(1.5) saturate(1.2); box-shadow: 0 0 12px 3px var(--kekkai-color, rgba(210,160,245,0.7)); }
+    100% { filter: brightness(1); box-shadow: none; }
+  }
+  /* 発動時に外へ広がる波紋 */
+  .kekkai-ripple {
+    position: absolute; inset: 0; pointer-events: none; z-index: 6;
+    border: 2px solid rgba(230,190,255,0.9); border-radius: 6px;
+    animation: kekkaiRipple 0.9s ease-out forwards;
+  }
+  @keyframes kekkaiRipple {
+    0%   { transform: scale(1);   opacity: 0.95; }
+    100% { transform: scale(1.7); opacity: 0; }
+  }
   .cell.jutsu-danger { box-shadow: inset 0 0 0 2px rgba(235,90,80,0.85); }  /* 敵の術で王が倒される危険マス */
+  /* 危険マスを生んでいる敵駒（脅威の発生源）を分かりやすく示す */
+  .cell.jutsu-threat-src { box-shadow: inset 0 0 0 3px rgba(255,120,60,0.95), 0 0 12px rgba(255,110,50,0.7); }
+  .cell.jutsu-threat-src::before {
+    content:'⚠'; position:absolute; top:0px; left:2px; font-size:0.6rem;
+    color:rgba(255,170,90,0.98); pointer-events:none; z-index:3;
+  }
   .cell.jutsu-danger::after {
     content:'危'; position:absolute; top:1px; right:2px; font-size:0.5rem;
     color:rgba(255,150,140,0.95); pointer-events:none;
@@ -1363,6 +1427,7 @@ function executeScatter(f, team) {
   try { flashEffect([[f.topRow,f.leftCol],[f.topRow,f.leftCol+1],[f.topRow+1,f.leftCol],[f.topRow+1,f.leftCol+1]], 'create', '散'); } catch(e){}
   try { if (window.AGX) window.AGX.SE.fusion(); } catch(e){}
   showEffectBanner('術','散');
+  try { if (gameLog && gameLog.byTeam && gameLog.byTeam[team]) gameLog.byTeam[team].scatter++; } catch(e){}
   return true;
 }
 
@@ -1459,12 +1524,20 @@ function specialMoveThreatensKing(foe, kr, kc) {
 // 王が術の対象になったため、どこが危ないかを事前に知らせる（回避は自由＝警告のみ）。
 // 対象：金剛力（金）／矛爪（白虎）／大暴発・即起爆（炎を溜めた火）／潜伏の出現破壊（土・麒麟）。
 // 渦・凍結は王を倒さないので脅威には含めない。
-function jutsuDangerCells(team) {
+let jutsuDangerSrc = {}; // 脅威を出している敵駒の位置（盤上で光らせて発生源を示す）
+// bd を渡すと、その盤面で計算する（AIの探索用）。省略時は実際の盤面を見る。
+function jutsuDangerCells(team, bd) {
+  const useBoard = bd || board;
+  const isLive = !bd;              // 実盤面のときだけ、表示用の発生源を記録する
   const foe = team==='ten' ? 'mei' : 'ten';
   const danger = {};
-  const add = (r,c) => { if (r>=0&&r<9&&c>=0&&c<9) danger[r+','+c] = 1; };
+  if (isLive) jutsuDangerSrc = {};
+  let srcKey = null;
+  const add = (r,c) => {
+    if (r>=0&&r<9&&c>=0&&c<9) { danger[r+','+c] = 1; if (srcKey && isLive) jutsuDangerSrc[srcKey] = 1; }
+  };
   for (let r=0;r<9;r++) for (let c=0;c<9;c++) {
-    const p = board[r][c];
+    const p = useBoard[r][c];
     if (!p || p.team!==foe) continue;
     // 自陣内では術を使えないので脅威にならない
     let inHome = false;
@@ -1472,15 +1545,17 @@ function jutsuDangerCells(team) {
     if (inHome) continue;
     // 金剛力（未成りの金）／矛爪（白虎）：目の前2マス（縦のみ。方向選択は廃止済み）
     if (p.type==='gogyou' && p.attr==='金') {
+      srcKey = r+','+c;
       try {
         for (const [dr,dc] of getKinVerticalCells(p, r, c)) add(dr,dc);
       } catch(e) {}
+      srcKey = null;
     }
     // 炎を溜めた火：周囲8マス（時限0の大暴発／即起爆）
     if (p.type==='gogyou' && p.attr==='火' && !p.promoted) {
       const key = hiKeyOf(p);
       const stack = key ? (hiStackCount[key] || 0) : 0;
-      if (stack > 0) { for (let dr=-1;dr<=1;dr++) for (let dc=-1;dc<=1;dc++) if(dr||dc) add(r+dr,c+dc); }
+      if (stack > 0) { srcKey = r+','+c; for (let dr=-1;dr<=1;dr++) for (let dc=-1;dc<=1;dc++) if(dr||dc) add(r+dr,c+dc); srcKey = null; }
     }
   }
   // 潜伏中の土・麒麟：潜った地点の横一列（壁で停止）＋前1マスに出現して倒せる
@@ -1489,7 +1564,9 @@ function jutsuDangerCells(team) {
       if (!h || !h.piece || h.piece.team!==foe) continue;
       let cells = [];
       try { cells = getTsuchiAppearCells(h) || []; } catch(e) { cells = []; }
+      srcKey = (h.origRow!=null && h.origCol!=null) ? (h.origRow+','+h.origCol) : null; // 潜った地点を発生源として示す
       for (const cell of cells) add(cell[0], cell[1]);
+      srcKey = null;
     }
   } catch(e) {}
   return danger;
@@ -1498,6 +1575,25 @@ function jutsuDangerCells(team) {
 // ===== 持ち駒を打てるマスの判定 =====
 // 敵陣にも打てる（本将棋と同じ）。ただし打った直後に一切動けなくなる位置には打てない。
 // 例：種駒や火など前方にしか進めない駒を、敵陣の最奥に打つ場合。
+// 打ったときに実際に盤へ出る駒を返す。
+// 種駒を敵陣に打った場合は、敵陣に入った扱いで五行駒に成った状態で登場する。
+function dropResultPiece(piece, row, col, team) {
+  const t = team || piece.team || currentTeam;
+  const enemyZone = t==='ten' ? row<=2 : row>=6;
+  if (enemyZone) {
+    // 種駒 → 五行駒（敵陣に入った扱い）
+    if (piece.type === 'tane') return makePiece('gogyou', t, piece.attr, false, true);
+    // 陰 → 暗黒竜／陽 → 耀白龍。ただし同種が既に盤上にいる場合は成れない。
+    if (piece.type === 'in' || piece.type === 'you') {
+      const tmp = makePiece(piece.type, t, piece.attr, false, true);
+      let ok = true;
+      try { ok = canPromoteKind(tmp); } catch(e) { ok = true; }
+      if (ok) tmp.promoted = true;
+      return tmp;
+    }
+  }
+  return makePiece(piece.type, t, piece.attr, false, true);
+}
 function canDropAt(piece, row, col) {
   if (!piece) return false;
   if (row<0||row>=9||col<0||col>=9) return false;
@@ -1509,11 +1605,252 @@ function canDropAt(piece, row, col) {
       if (q && q.team===piece.team && q.type==='tane') return false;
     }
   }
-  // 打った後に動ける場所があるか（無ければ死に駒になるので禁止）
+  // 打った後に動ける場所があるか（無ければ死に駒になるので禁止）。
+  // 種駒は敵陣で五行駒になるため、その姿で判定する。
   let res;
-  try { res = getMoves({ ...piece, promoted:false }, row, col, board); } catch(e) { return true; }
+  try {
+    const actual = dropResultPiece(piece, row, col, piece.team);
+    res = getMoves(actual, row, col, board);
+  } catch(e) { return true; }
   const canAct = ((res.moves||[]).length + (res.captures||[]).length) > 0;
   return canAct;
+}
+
+// ===== 五行の性格診断 =====
+// 対局中の指し方（使った術・戦った駒・攻めの速さ・打ち込み方）から、その人の「気質」を五行で診断する。
+// 木＝育てる／火＝攻める／土＝構える／金＝断つ／水＝あしらう、という五行の性質に対応させている。
+const PERSONALITY_DEFS = {
+  '木': { name:'木の気質', short:'育てる者', axis:'駒を成らせ、力を伸ばす',
+    desc:'一手一手を積み重ね、駒の力を引き上げてから戦う。目先の得より、後から効いてくる形を選ぶ。',
+    advice:'育てた力は、使ってこそ意味を持ちます。仕上がった駒でどこを崩すか、狙いを決めて動かしましょう。' },
+  '火': { name:'火の気質', short:'攻める者', axis:'前へ踏み込む',
+    desc:'ためらわず前進し、相手の陣へ圧をかけ続ける。読み合いより勢いで局面を動かしていく。',
+    advice:'勢いは最大の武器です。あとは踏み込む一歩の前に、退路と支えがあるかを一度だけ確かめると精度が上がります。' },
+  '土': { name:'土の気質', short:'構える者', axis:'駒を失わない',
+    desc:'損をしない。無理をしない。相手の攻めをいなし、崩れないまま終盤まで駒を残していく。',
+    advice:'堅さは本物です。あとは守り抜いた戦力をどこで使うか、勝負どころを一度決めてしまうと勝ち切れます。' },
+  '金': { name:'金の気質', short:'断つ者', axis:'相手を倒す',
+    desc:'迷いなく相手の駒を削り取る。搦め手を使わず、正面から数の差を作って押し切る。',
+    advice:'取る力は十分です。取った駒をどこへ打ち直すかまで考えられると、攻めの速度が一段上がります。' },
+  '水': { name:'水の気質', short:'あしらう者', axis:'技を編む',
+    desc:'正面からぶつからず、技と仕掛けで盤を動かす。相手の思い通りにさせない戦い方を選ぶ。',
+    advice:'仕掛けの手数は豊富です。技で作った隙を、最後に仕留める形へつなげられると一気に勝ちが近づきます。' },
+};
+// 二つの気質が拮抗しているときの短評
+const PERSONALITY_PAIRS = {
+  '木火':'力を蓄えながら攻め続ける、伸びと勢いを併せ持つ戦い方。',
+  '木土':'焦らず育て、決して崩れない。最も長期戦に強い組み合わせ。',
+  '木金':'育てた駒で確実に刈り取る、着実な拡大路線。',
+  '木水':'技で場を整えながら力を伸ばす、玄人好みの構え。',
+  '火土':'攻めながらも損をしない。踏み込みと引き際を心得ている。',
+  '火金':'前へ出て、そのまま斬る。最も直線的で圧の強い戦い方。',
+  '火水':'技で崩し、勢いで押し込む。相手にとって最も読みにくい。',
+  '土金':'守りを固めつつ確実に取る。隙のない締め上げ方。',
+  '土水':'受けて、いなして、絡め取る。相手の攻めを無力化する構え。',
+  '金水':'技で動かし、確実に討ち取る。仕留めることに長けた戦い方。',
+};
+// 低い項目への助言（その気質が弱いときに何を足すとよいか）
+const PERSONALITY_WEAK = {
+  '木':'駒を成らせる機会が少なめでした。一枚を育てきると、終盤の力が変わります。',
+  '火':'前に出る量が控えめでした。狙いを定めて踏み込む場面を作ると、主導権を握れます。',
+  '土':'駒の損失が目立ちました。取られる位置に置かない意識だけで、戦力はかなり残ります。',
+  '金':'相手を倒す数が少なめでした。取れる駒は取る、という単純な選択も強力な武器です。',
+  '水':'技をあまり使いませんでした。術や合体を絡めると、駒の力だけでは作れない形が生まれます。',
+};
+// 全体の水準による称号
+function personalityTitle(sc) {
+  const vals = ['木','火','土','金','水'].map(k => sc[k]||0).sort((a,b)=>b-a);
+  const avg = vals.reduce((a,b)=>a+b,0) / 5;
+  const max = vals[0], second = vals[1], min = vals[4];
+  if (avg >= 75) return { name:'五行相成', text:'すべての力が高い水準で噛み合っています。盤上を余さず使い切る、稀有な一局でした。' };
+  if (avg >= 60 && (max - min) <= 25) return { name:'調和', text:'突出も欠落もなく、五つの力が釣り合っています。どんな相手にも形を作れる柔軟さがあります。' };
+  // 二本柱：上位2つが揃って高く、3位以下と差がある
+  if (second >= 65 && (second - vals[2]) >= 20) return { name:'両刀', text:'二つの力を併せ持つ戦い方です。相手からすると狙いを絞りにくく、対応を強いられます。' };
+  // 一極：ひとつだけが突出（2位が低いことを条件に加える）
+  if (max >= 90 && second <= 45) return { name:'一極', text:'一つの力に振り切った戦い方です。長所がはっきりしているぶん、噛み合ったときの爆発力があります。' };
+  if (avg <= 25) return { name:'静', text:'動きの少ない一局でした。次はどれか一つ、伸ばしたい方向を決めて指してみると変化が出ます。' };
+  return null;
+}
+
+// 1局分のログから五行スコアを出す（team＝診断したい側）
+// 各項目0〜100に正規化してレーダーチャートに使う。
+//   木＝成った回数（駒を育てたか）
+//   火＝移動したマス数（どれだけ動き回ったか）
+//   土＝失った駒の少なさ（強い駒を取られるほど大きく減点）
+//   金＝撃破数（どれだけ倒したか）
+//   水＝術の使用回数（技をどれだけ使ったか）
+function analyzePersonality(log, team) {
+  if (!log || !log.byTeam || !log.byTeam[team]) return null;
+  const bt = log.byTeam[team];
+  // 「1手あたりの密度」で評価する。総ターン数は両者の手数の合計なので、自分の手数はその半分。
+  // こうしないと長い対局ほど全項目が満点に張り付き、個性が出なくなる。
+  const myTurns = Math.max(8, Math.round((log.totalTurns || turnCount || 40) / 2));
+  // 満点になる「1手あたりの割合」（★ここを変えると診断の出方を調整できる）
+  const RATE = {
+    promote: 0.20,   // 5手に1回成る
+    advance: 2.0,    // 1手あたり2.0マス前進で満点（実対局は1.2〜1.7程度。緩いと誰でも火になるため厳しめ）
+    kill:    0.35,   // 3手に1体倒す
+    tech:    0.70,   // 1手あたり術0.7回相当（合体1回＝術4回分）
+  };
+  const pct = (v, rate) => Math.max(0, Math.min(100, Math.round((v / (myTurns * rate)) * 100)));
+
+  // 木：成り回数の密度
+  const ki = pct(bt.promotes||0, RATE.promote);
+  // 火：前進量の密度（敵陣に向かって進んだ分だけ加点。横移動・後退は0）
+  const hi = pct(bt.advance||0, RATE.advance);
+  // 金：撃破＋打ち込み（打ち込みは半分の重み）の密度。打ち込みは持ち駒を打つ操作のみ。
+  const kin = pct((bt.killCount||0) + (bt.drops||0) * 0.5, RATE.kill);
+  // 水：術＋合体（合体は術の4倍の重み）の密度
+  let jutsuTotal = 0;
+  for (const v of Object.values(bt.jutsu||{})) jutsuTotal += v;
+  let fusionTotal = 0;
+  for (const v of Object.values(bt.fusionCreate||{})) fusionTotal += v;
+  const mizu = pct(jutsuTotal + fusionTotal * 4, RATE.tech);
+  // 土：失った駒の少なさ。絶対値だと「何も起きていない対局」で満点になるため、相手の損失との比較で見る。
+  const foe = team==='ten' ? 'mei' : 'ten';
+  const myLost  = bt.lostValue || 0;
+  const foeLost = (log.byTeam[foe] && log.byTeam[foe].lostValue) || 0;
+  const tsuchi = (myLost + foeLost === 0)
+    ? 50
+    : Math.max(0, Math.min(100, Math.round((foeLost / (myLost + foeLost)) * 100)));
+
+  return { '木':ki, '火':hi, '土':tsuchi, '金':kin, '水':mizu };
+}
+// 診断の内訳を人が読める形で返す
+function personalityDetail(log, team) {
+  if (!log || !log.byTeam || !log.byTeam[team]) return null;
+  const bt = log.byTeam[team];
+  let jutsuTotal = 0;
+  for (const v of Object.values(bt.jutsu||{})) jutsuTotal += v;
+  let fusionTotal = 0;
+  for (const v of Object.values(bt.fusionCreate||{})) fusionTotal += v;
+  return {
+    '木': `成り${bt.promotes||0}回`,
+    '火': `前進${bt.advance||0}マス（総移動${bt.distance||0}）`,
+    '土': `被害${bt.lostValue||0}（相手${(log.byTeam[team==='ten'?'mei':'ten']||{}).lostValue||0}）`,
+    '金': `撃破${bt.killCount||0}体・打${bt.drops||0}回`,
+    '水': `術${jutsuTotal}回・合体${fusionTotal}回`,
+  };
+}
+// 複数局のスコアを合算して保存（localStorage）
+function savePersonalityRecord(sc) {
+  if (!sc) return;
+  try {
+    const raw = localStorage.getItem('ogx_personality');
+    const acc = raw ? JSON.parse(raw) : { games:0, score:{ '木':0,'火':0,'土':0,'金':0,'水':0 } };
+    acc.games = (acc.games||0) + 1;
+    for (const k of Object.keys(sc)) acc.score[k] = (acc.score[k]||0) + sc[k];
+    localStorage.setItem('ogx_personality', JSON.stringify(acc));
+    return acc;
+  } catch(e) { return null; }
+}
+function loadPersonalityRecord() {
+  try {
+    const raw = localStorage.getItem('ogx_personality');
+    return raw ? JSON.parse(raw) : null;
+  } catch(e) { return null; }
+}
+// 五行のレーダーチャート（SVG）を生成する
+function buildRadarChart(sc, size) {
+  const S = size || 190, cx = S/2, cy = S/2 + 4, R = S*0.34;
+  const axes = ['木','火','土','金','水'];
+  const colors = { '木':'#7ec87e', '火':'#e08050', '土':'#d0b060', '金':'#e8e8f0', '水':'#7ab0d8' };
+  const pt = (i, r) => {
+    const ang = -Math.PI/2 + (Math.PI*2/5)*i;   // 真上から時計回り
+    return [cx + Math.cos(ang)*r, cy + Math.sin(ang)*r];
+  };
+  let svg = `<svg viewBox="0 0 ${S} ${S}" style="width:100%;max-width:${S}px;display:block;margin:6px auto;">`;
+  // 背景の五角形（25/50/75/100%）
+  for (const f of [0.25, 0.5, 0.75, 1]) {
+    const pts = axes.map((_,i)=>pt(i, R*f).map(n=>n.toFixed(1)).join(',')).join(' ');
+    svg += `<polygon points="${pts}" fill="none" stroke="rgba(200,150,12,${f===1?0.45:0.18})" stroke-width="1"/>`;
+  }
+  // 軸線
+  axes.forEach((_,i)=>{
+    const [x,y] = pt(i, R);
+    svg += `<line x1="${cx}" y1="${cy}" x2="${x.toFixed(1)}" y2="${y.toFixed(1)}" stroke="rgba(200,150,12,0.25)" stroke-width="1"/>`;
+  });
+  // データ多角形
+  const dpts = axes.map((k,i)=>{
+    const v = Math.max(0, Math.min(100, sc[k]||0));
+    return pt(i, R*(v/100)).map(n=>n.toFixed(1)).join(',');
+  }).join(' ');
+  svg += `<polygon points="${dpts}" fill="rgba(220,180,90,0.28)" stroke="var(--gold)" stroke-width="2" stroke-linejoin="round"/>`;
+  // 頂点の点とラベル
+  axes.forEach((k,i)=>{
+    const v = Math.max(0, Math.min(100, sc[k]||0));
+    const [px,py] = pt(i, R*(v/100));
+    svg += `<circle cx="${px.toFixed(1)}" cy="${py.toFixed(1)}" r="3" fill="${colors[k]}"/>`;
+    const [lx,ly] = pt(i, R+16);
+    svg += `<text x="${lx.toFixed(1)}" y="${(ly+4).toFixed(1)}" text-anchor="middle" font-size="13" fill="${colors[k]}" font-family="inherit">${k}</text>`;
+  });
+  svg += `</svg>`;
+  return svg;
+}
+// スコアから講評を組み立てる（主属性・拮抗する副属性・弱点・称号）
+function buildPersonalityReview(sc) {
+  const keys = ['木','火','土','金','水'];
+  const sorted = keys.slice().sort((a,b)=>(sc[b]||0)-(sc[a]||0));
+  const top = sorted[0], second = sorted[1];
+  const topV = sc[top]||0, secV = sc[second]||0;
+  const out = { top, second:null, lines:[] };
+  const d = PERSONALITY_DEFS[top];
+  if (d) out.lines.push(d.desc);
+  // 称号が「五行相成」「調和」のときは全体の話が主役なので、二属性の併記はしない
+  const preTitle = personalityTitle(sc);
+  const wholeIsMain = preTitle && (preTitle.name === '五行相成' || preTitle.name === '調和'); // 両刀は併記を残す
+  // 僅差（10以内かつ両方50以上）なら二つ目の気質も評価する
+  if (!wholeIsMain && topV - secV <= 10 && secV >= 50) {
+    out.second = second;
+    const pairKey = keys.filter(k => k===top || k===second).join(''); // 五行の順に整列
+    const pairText = PERSONALITY_PAIRS[pairKey];
+    const sd = PERSONALITY_DEFS[second];
+    out.lines.push(`<b>${sd.short}</b>の気質も同じだけ強く出ています。${pairText || ''}`);
+  }
+  // 称号（全体の水準による）
+  if (preTitle) out.title = preTitle;
+  // 目立って低い項目への助言（30未満、かつ主属性ではない）
+  const low = sorted[sorted.length-1];
+  if ((sc[low]||0) < 30 && low !== top) {
+    out.weak = PERSONALITY_WEAK[low];
+  }
+  // 助言（主属性のもの）。弱点の助言がある場合はそちらを優先して2つ並べる
+  if (d) out.advice = d.advice;
+  return out;
+}
+// スコアから上位属性を決める
+function topAttrOf(sc) {
+  if (!sc) return null;
+  let best=null, bv=-1;
+  for (const [k,v] of Object.entries(sc)) { if (v > bv) { bv=v; best=k; } }
+  return bv > 0 ? best : null;
+}
+
+// 保険：駒と合体駒が同じマスに重なってしまった場合の救済。
+// 合体駒は board とは別管理のため、何らかの経路で駒が入り込むと見た目が重なってしまう。
+// 相性で壊せる駒なら合体駒を破壊し、壊せない駒なら駒のほうを隣の空きマスへ逃がす。
+function resolveFusionOverlap() {
+  for (let r=0;r<9;r++) for (let c=0;c<9;c++) {
+    const p = board[r][c];
+    if (!p) continue;
+    const f = getFusionAt(r,c);
+    if (!f) continue;
+    if (f.team !== p.team && canCaptureFusion(p, f)) {
+      destroyFusion(f);
+      setLog(`${getPieceName(p)}が合体駒【${f.name}】を破壊した！`);
+      continue;
+    }
+    // 壊せない場合は駒を隣の空きマスへ移す
+    let moved = false;
+    for (const [dr,dc] of [[-1,0],[1,0],[0,-1],[0,1],[-1,-1],[-1,1],[1,-1],[1,1]]) {
+      const nr=r+dr, nc=c+dc;
+      if (nr<0||nr>=9||nc<0||nc>=9) continue;
+      if (board[nr][nc] || getWallAt(nr,nc) || getFusionAt(nr,nc)) continue;
+      board[nr][nc] = p; board[r][c] = null; moved = true;
+      break;
+    }
+    if (!moved) board[r][c] = null; // 逃げ場が無ければ駒は消える（結界に飲まれた扱い）
+  }
 }
 
 function checkKingCaptured() {
@@ -1632,6 +1969,7 @@ function canPromoteKind(piece) {
 
 function applyGoshinPromotion(p) {
   p.promoted = true;
+  try { logPromote(p.team); } catch(e){}
   // 潜伏出現などで駒オブジェクトが複製された場合に備え、同じpidの駒（盤上・潜伏中）もすべて成らせる
   if (p.pid != null) {
     for (let r=0;r<9;r++) for (let c=0;c<9;c++) { const bp=board[r][c]; if (bp && bp.pid===p.pid) bp.promoted=true; }
@@ -1705,6 +2043,7 @@ function executeFusion(baseSelect, topRow, leftCol) {
         savedCount++;
       }
       board[r][c] = null;
+      clearFrozenAt(r, c); // 巻き込まれた駒が凍っていた場合の解除
     }
     const w = getWallAt(r,c);
     if (w) { removeWall(w.id); destroyed.push('壁'); }
@@ -1730,7 +2069,7 @@ function executeFusion(baseSelect, topRow, leftCol) {
   // 状態リセット
   fusionFlowState = null; fusionBaseSelect = null; capturedSelectedIdx = null;
   renderCapturedPanel();
-  logFusionCreate(def.name);
+  logFusionCreate(def.name, currentTeam);
   fusionBirthBanner = true;
   showEffectBanner('結界', def.name);
   fusionBirthBanner = false;
@@ -1810,8 +2149,27 @@ function triggerFusionTurnStart(team) {
   for (const ef of fusionPieces[enemyTeam]) {
     if (ef.name === '樹海') {
       const prob = fusionProbability(ef);
-      if (Math.random() < prob) { skipTurn = true; showEffectBanner('結界','樹海');
-      setLog('樹海の力！相手にターンを奪われた！'); }
+      if (Math.random() < prob) {
+        skipTurn = true; showEffectBanner('結界','樹海');
+        // 樹海：ターンを奪うだけでなく、周囲に木々（壁）を生やして盤を覆っていく。
+        // 壁は樹海の持ち主のものとして扱い、上限の対象外（合体駒が消えても残る）。
+        const grown = [];
+        try {
+          const around = getFusionSurroundingCells(ef).filter(([r,c]) =>
+            !board[r][c] && !getWallAt(r,c) && !getFusionAt(r,c));
+          // ランダムに最大2マス
+          for (let i=around.length-1; i>0; i--) { const j=Math.floor(Math.random()*(i+1)); [around[i],around[j]]=[around[j],around[i]]; }
+          // 壁のルールは全種類で共通（1つの発生源につき盤上3個まで・置いたら残る）
+          for (const [wr,wc] of around.slice(0, 2)) {
+            placeWall({ team: ef.team, pid: 'jukai'+(ef.id||'') }, wr, wc, wr, wc);
+            grown.push([wr,wc]);
+          }
+        } catch(e) {}
+        if (grown.length) { try { flashEffect(grown, 'create', '茂'); } catch(e){} }
+        setLog(grown.length
+          ? `樹海の力！ターンを奪われ、樹海が${grown.length}マスに茂った！`
+          : '樹海の力！相手にターンを奪われた！');
+      }
     }
   }
   for (const f of fusionPieces[team]) {
@@ -1837,7 +2195,8 @@ function triggerFusionTurnStart(team) {
         if (around.length>0) {
           const [r,c] = around[Math.floor(Math.random()*around.length)];
           const attrs = ['木','火','土','金','水'];
-          board[r][c] = makePiece('tane', team, attrs[Math.floor(Math.random()*5)]);
+          // hasMoved=true：焚沃が生んだ種駒は最初の2マス移動ができない（常に1マス）
+          board[r][c] = makePiece('tane', team, attrs[Math.floor(Math.random()*5)], false, true);
           showEffectBanner('結界','焚沃');
           setLog('焚沃の力！新たな種駒が芽吹いた！');
           flashEffect([[r,c]],'create','芽');
@@ -1876,7 +2235,7 @@ function triggerFusionTurnStart(team) {
           genkyokuMuAvailable = team;
           genkyokuLastGrant[team] = seasonIdx;
           showEffectBanner('結界','玄極');
-          setLog('玄極の力！相手の駒を1つ「無」にできる（相手の駒をタップ／王は不可）');
+          setLog('玄極の力！相手の駒を1つ、ひとつ前の姿へ戻せる（相手の駒をタップ／王は不可）');
         }
         // 対象がいなければ何もしない（次の発動周期まで持ち越し。スタックを防ぐ）
       }
@@ -1918,28 +2277,22 @@ function getFusionSurroundingCells(f) {
 function getWallAt(r, c) { return wallPieces.find(w => w.row===r && w.col===c) || null; }
 // 壁を壊せるのは「火」「金」の駒と、「陰」「陽」（成り＝暗黒竜・耀白龍を含む）。
 // 木・水・土（青龍・玄武・麒麟を含む）と王は壁を壊せず、壁の手前で止まる。
-function canBreakWall(piece) {
+function canBreakWall(piece, wall) {
   if (!piece) return false;
+  if (piece.type === 'ten' || piece.type === 'mei') return true;  // 王（無属性・相性を無視して戦う駒なので壁も壊せる）
   if (piece.type === 'in' || piece.type === 'you') return true;   // 陰・陽（暗黒竜・耀白龍）
   return piece.attr === '火' || piece.attr === '金';               // 火・金（朱雀・白虎・種駒も属性で判定）
 }
 function getWallsByOwner(ownerKey) { return wallPieces.filter(w => w.ownerKey===ownerKey); }
 function removeWall(wallId) { wallPieces = wallPieces.filter(w => w.id!==wallId); }
-// 指定の駒が所有する壁をすべて取り除く（青龍が新しい軌跡を残すときに前回の軌跡を消す）
-function clearWallsOwnedBy(piece) {
-  if (!piece || piece.pid === undefined) return;
-  const key = 'pid' + piece.pid;
-  wallPieces = wallPieces.filter(w => w.ownerKey !== key);
-}
 
 function getWallPlaceCells(piece, row, col) {
-  // 木の壁：自陣以外の盤全体の空きマスに設置可能
+  // 木の壁：盤全体の空きマスに設置できる（自陣にも置ける＝守りを固める使い方も可能）。
+  // ※術を使うには木自身が自陣の外に出ている必要がある、というルールは従来どおり。
   const cells = [];
-  const selfZone = piece.team === 'ten' ? r => r >= 6 : r => r <= 2;
   for (let r = 0; r < 9; r++) {
     for (let c = 0; c < 9; c++) {
       if (r===row && c===col) continue;
-      if (selfZone(r)) continue;
       if (board[r][c]) continue;
       if (getWallAt(r,c)) continue;
       if (getFusionAt(r,c)) continue;
@@ -1949,18 +2302,29 @@ function getWallPlaceCells(piece, row, col) {
   return cells;
 }
 
+// 青龍の軌跡は「常に最新の1本だけ」。新しい軌跡を置く前に、その青龍が残した壁をすべて消す。
+function clearWallsOwnedBy(piece) {
+  if (!piece || piece.pid === undefined) return;
+  const key = 'pid' + piece.pid;
+  wallPieces = wallPieces.filter(w => w.ownerKey !== key);
+}
 function placeWall(piece, ownerRow, ownerCol, r, c, opts) {
   // 持ち主は駒の固有ID（pid）。駒が移動しても同じ持ち主として追跡し、合計3個まで
   if (piece && piece.pid === undefined) piece.pid = pieceIdCounter++;
   const ownerKey = piece ? 'pid' + piece.pid : `${ownerRow},${ownerCol}`;
   const owned = getWallsByOwner(ownerKey);
   const limit = 3; // 木の術「壁作成」：1体につき盤上3個まで
+  // 青龍の軌跡（noLimit）は「最新の1本だけ残す」方式なので、この上限判定は通さない。
+  // 通すと1回の移動で置いた3〜4個のうち古いものが即座に消え、軌跡が歯抜けになる。
   // 青龍の軌跡壁は「常に最新の1本だけ」を残す方式のため、この上限判定を通さない
   // （通さないと、1回の移動で置いた3〜4個のうち古いものが即座に消え、
   //   壁が置かれたり置かれなかったりして見える不具合になっていた）
-  if (!(opts && opts.noLimit) && owned.length >= limit) { owned.sort((a,b)=>a.id-b.id); removeWall(owned[0].id); }
+  if (!(opts && opts.noLimit) && owned.length >= limit) {
+    owned.sort((a,b)=>a.id-b.id);
+    removeWall(owned[0].id);
+  }
   // trail=true は青龍の軌跡壁（上限の対象外・次に青龍が動くと消える）。木の術で作る壁と区別する。
-  wallPieces.push({ id: wallIdCounter++, team: piece.team, row: r, col: c, ownerKey, fireAttr: false, trail: !!(opts && opts.noLimit) });
+  wallPieces.push({ id: wallIdCounter++, team: piece.team, row: r, col: c, ownerKey, fireAttr: false, trail: !!(opts && opts.trail), jukai: !!(opts && opts.jukai) });
   lastJutsuPiece = piece; // 術使用（成り判定用）
   try { flashEffect([[r,c]], 'create', '壁'); } catch(e){}
 }
@@ -1976,7 +2340,6 @@ function ryuTrailWallAt(piece, fromR, fromC) {
 }
 
 // 朱雀が乗っている壁駒の位置
-let suzakuOnWall = null; // {pieceRef, wallRow, wallCol, team}
 // 土の潜伏状態: {piece, team, ownerKey(r,c), year, useCount}
 let hiddenTsuchi = []; // 潜伏中の土駒リスト
 // 土の成り条件カウント: key='team_r_c', value={count, year}
@@ -1990,9 +2353,9 @@ let kirinMarkMode = null;
 // 持ち駒: { ten: [...], mei: [...] } 各要素は makePiece構造（成り前・敵属性のまま）
 let capturedPieces = { ten: [], mei: [] };
 let capturedSelectedIdx = null; // 持ち駒パネルで選択中のインデックス
-// 持ち駒配置数カウント（1ゲーム内合計10枠まで）※消耗制：使った枠は永久に潰れる
+// 持ち駒の枚数カウント（スロット消耗制は廃止済み。この値は表示用）
 let capturedPlacedCount = { ten: 0, mei: 0 }; // = 潰れた（消耗した）枠数
-// スロット消耗制：全10枠 ＝ 所持中の駒 ＋ 潰れた枠。空き枠 = 10 - 使用中。
+// （スロット消耗制は廃止済み。以下は表示・互換のために残している）
 function slotsUsed(team){ return (capturedPieces[team] ? capturedPieces[team].length : 0); }
 // スロット消耗制は廃止。持ち駒は無制限に打てる（枠は潰れない）。互換のため常に空きありを返す。
 function slotsFree(team){ return 99; }
@@ -2034,6 +2397,11 @@ function initGameLog() {
     fusionCreate: {}, // 合体駒名 -> 作成回数
     fusionEffect: {}, // 合体駒名 -> 効果発動回数
     pieceKills: {},   // 駒種別 -> 倒した数（例: '木','朱雀','陰'）
+    // 性格診断用：陣営ごとの内訳（誰がどう戦ったかを分けて記録する）
+    byTeam: {
+      ten: { jutsu:{}, kills:{}, fusionCreate:{}, moves:0, drops:0, advance:0, scatter:0, promotes:0, distance:0, killCount:0, lostValue:0 },
+      mei: { jutsu:{}, kills:{}, fusionCreate:{}, moves:0, drops:0, advance:0, scatter:0, promotes:0, distance:0, killCount:0, lostValue:0 },
+    },
     winner: null,
     winMove: null,    // 決着の説明
     totalTurns: 0,
@@ -2042,6 +2410,7 @@ function initGameLog() {
 // 記録ヘルパー
 function logCapture(attackerPiece, victimPiece, by) {
   if (victimPiece) { try { lastCaptureNote = getPieceName(victimPiece); } catch(e){} } // デバッグ棋譜用
+  try { checkCaptureLegality(attackerPiece, victimPiece, by); } catch(e) {} // デバッグ：相性違反の撃破を検知
   // 討ち取り演出：取られた駒の位置（分かる範囲で lastMove.to を使う）に討ち取り表示を予約
   if (victimPiece) {
     try {
@@ -2060,24 +2429,62 @@ function logCapture(attackerPiece, victimPiece, by) {
   const vName = getPieceName(victimPiece);
   gameLog.captures.push({ turn: turnCount, attacker: aName, victim: vName, by, team: attackerPiece?attackerPiece.team:null });
   // 駒種別の戦果（攻撃側の駒名でカウント）
+  logLoss(victimPiece); // 取られた側の損失を記録（土の評価に使う）
   if (attackerPiece) {
     const key = getPieceName(attackerPiece);
     gameLog.pieceKills[key] = (gameLog.pieceKills[key]||0) + 1;
+    const t = attackerPiece.team;
+    if (gameLog.byTeam && gameLog.byTeam[t]) {
+      gameLog.byTeam[t].kills[key] = (gameLog.byTeam[t].kills[key]||0) + 1;
+      gameLog.byTeam[t].killCount++;
+    }
   } else if (by) {
     gameLog.pieceKills[by] = (gameLog.pieceKills[by]||0) + 1;
   }
 }
-function logJutsu(name) {
+// 性格診断用：成り／失った駒の記録
+function logPromote(team) {
+  if (!gameLog || !gameLog.byTeam || !gameLog.byTeam[team]) return;
+  gameLog.byTeam[team].promotes++;
+}
+// 失った駒の重み（強い駒ほど減点が大きい）
+function lostWeightOf(piece) {
+  if (!piece) return 0;
+  if (piece.type==='ten' || piece.type==='mei') return 0; // 王は別（決着そのもの）
+  if (piece.type==='tane') return 1;
+  if (piece.type==='in' || piece.type==='you') return piece.promoted ? 6 : 4;
+  if (piece.type==='gogyou') return piece.promoted ? 5 : 3; // 五神は重い
+  return 2;
+}
+function logLoss(piece) {
+  if (!gameLog || !piece || !gameLog.byTeam || !gameLog.byTeam[piece.team]) return;
+  gameLog.byTeam[piece.team].lostValue += lostWeightOf(piece);
+}
+function logJutsu(name, team) {
   if (!gameLog) return;
   gameLog.jutsuUse[name] = (gameLog.jutsuUse[name]||0) + 1;
+  const t = team || currentTeam;
+  if (gameLog.byTeam && gameLog.byTeam[t]) {
+    gameLog.byTeam[t].jutsu[name] = (gameLog.byTeam[t].jutsu[name]||0) + 1;
+  }
 }
-function logFusionCreate(name) {
+function logFusionCreate(name, team) {
   if (!gameLog) return;
   gameLog.fusionCreate[name] = (gameLog.fusionCreate[name]||0) + 1;
+  const t = team || currentTeam;
+  if (gameLog.byTeam && gameLog.byTeam[t]) {
+    gameLog.byTeam[t].fusionCreate[name] = (gameLog.byTeam[t].fusionCreate[name]||0) + 1;
+  }
 }
-function logFusionEffect(name) {
+function logFusionEffect(name, team) {
   if (!gameLog) return;
   gameLog.fusionEffect[name] = (gameLog.fusionEffect[name]||0) + 1;
+  // 表示用に陣営別でも数える（発動は確率で自動なので性格診断の点数には入れない）
+  const t = team || currentTeam;
+  if (gameLog.byTeam && gameLog.byTeam[t]) {
+    gameLog.byTeam[t].fusionEffect = gameLog.byTeam[t].fusionEffect || {};
+    gameLog.byTeam[t].fusionEffect[name] = (gameLog.byTeam[t].fusionEffect[name]||0) + 1;
+  }
 }
 // 火の溜め状態: key='hi'+pid, value=溜め回数(0-2)
 let hiStackCount = {};
@@ -2094,6 +2501,39 @@ let hiMoveState = null;
 let frozenPieces = { ten:null, mei:null }; // 凍結は「かけた側」ごとに1枠（共用だと相手の凍結で自分が撃てなくなる）
 // 互換用：どちらかのチームが凍結中なら真を返す（旧コードのfrozenPiece参照を吸収）
 function anyFrozen() { return frozenPieces.ten || frozenPieces.mei || null; }
+// 玄極の無化：駒を一段階だけ前の姿へ戻す（いきなり無にはしない）。
+// 五神駒 → 五行駒 → 種駒 → 無 ／ 暗黒竜・耀白龍 → 陰・陽 → 無
+// 戻せる駒は「削られる」だけなので、守って育て直す余地が生まれる。
+function degradePiece(piece) {
+  if (!piece) return null;
+  // 成り駒 → 成る前へ
+  if (piece.promoted) {
+    return { piece: makePiece(piece.type, piece.team, piece.attr, false, true), label: '成りが解けた' };
+  }
+  // 五行駒 → 種駒
+  if (piece.type === 'gogyou') {
+    return { piece: makePiece('tane', piece.team, piece.attr, false, true), label: '種駒に戻った' };
+  }
+  // 種駒・陰・陽 → 無
+  return { piece: makePiece('mu', piece.team, null), label: '「無」と化した' };
+}
+
+// 指定のマスにかかっている凍結を解除する。
+// 凍結は「座標」で記録しているため、凍った駒が取られたり動いたりしたら必ず解除しないと、
+// そのマスに入った別の駒（取った側の駒すら）が凍った扱いになってしまう。
+function clearFrozenAt(row, col) {
+  for (const t of ['ten','mei']) {
+    const f = frozenPieces[t];
+    if (f && f.row === row && f.col === col) frozenPieces[t] = null;
+  }
+}
+// 凍結した駒が別のマスへ移された場合、凍結の記録も一緒に移す（麒麟の入替・水晶の操作など）
+function moveFrozenTo(fromR, fromC, toR, toC) {
+  for (const t of ['ten','mei']) {
+    const f = frozenPieces[t];
+    if (f && f.row === fromR && f.col === fromC) { f.row = toR; f.col = toC; }
+  }
+}
 function frozenAt(row, col) {
   for (const t of ['ten','mei']) { const f=frozenPieces[t]; if (f && f.row===row && f.col===col) return f; }
   return null;
@@ -2103,7 +2543,8 @@ let lastFreezeCastTurn = { ten:-999, mei:-999 }; // チーム別
 const FREEZE_COOLDOWN = 10; // ★調整可：小さいほど頻繁に氷結できる
 // 渦（水の術）のクールダウン
 let lastUzuCastTurn = { ten:-999, mei:-999 }; // チーム別（共用だと相手が使った直後に自分も撃てなくなる不具合になる）
-const UZU_COOLDOWN = 6; // ★調整可
+// 渦のクールダウンは廃止（氷結時代の名残で、水だけ特別な制約があるのは分かりにくいため）。
+// 渦は「手番を消費する」「目の前が空いている必要がある」「2マス以内」という制約で十分に釣り合う。
 // 直前の手（from/to）を盤上でハイライト表示するための記録
 let lastMove = null; // { from:[r,c]|null, to:[r,c] }
 // 直前の手が捕獲だった場合のマス強調（次の手が指されるまで残る）
@@ -2139,6 +2580,37 @@ function recordMove() {
     if (moveHistory.length > 60) moveHistory.shift(); // 直近60手だけ保持（メモリ節約）
   } catch(e) {}
   lastCaptureNote = null;
+}
+
+// 相性的に倒せないはずの撃破を検知する（デバッグ棋譜がONのときだけ）。
+// 除外：鉱山の効果（相性無視）／矛爪・大暴発など相性を無視する術／合体駒の破壊。
+function checkCaptureLegality(attacker, victim, by) {
+  if (!debugPanelOn) return;
+  if (!attacker || !victim) return;
+  // 相性無視で倒せる手段は検証対象外
+  const ignoreList = ['矛爪','大暴発','即起爆','金剛力','潜伏','鉱山'];
+  if (by && ignoreList.includes(by)) return;
+  // 鉱山の効果が発動中のチームは相性無視で倒せる
+  if (typeof kouzanActive !== 'undefined' && kouzanActive && attacker.team === kouzanActive) return;
+  // 玄武は専用の撃破条件（金・火・陰陽・王）を持つので、そちらで検証する
+  if (by === '玄武' || (attacker.type==='gogyou' && attacker.attr==='水' && attacker.promoted)) {
+    let ok = false;
+    try { ok = genbuCanDefeat(victim); } catch(e) { ok = true; }
+    if (!ok) {
+      anomalyLog.push({ turn: turnCount, text: `相性違反：玄武が ${getPieceName(victim)} を倒した（玄武が倒せるのは金・火・陰陽・王のみ）` });
+      renderDebugPanel();
+    }
+    return;
+  }
+  // 通常の相性判定
+  let ok = true;
+  try { ok = canCapture(attacker, victim); } catch(e) { ok = true; }
+  if (!ok) {
+    anomalyLog.push({ turn: turnCount,
+      text: `相性違反：${getPieceName(attacker)}（${attacker.attr||'無属性'}）が ${getPieceName(victim)}（${victim.attr||'無属性'}）を倒した${by&&by!=='move'?`／手段：${by}`:''}` });
+    if (anomalyLog.length > 40) anomalyLog = anomalyLog.slice(-40);
+    renderDebugPanel();
+  }
 }
 
 // 盤面の異常を検知する。debugPanelOnのときだけnextTurnで呼ぶ（重いので通常は動かさない）。
@@ -2268,18 +2740,8 @@ function executeKinJutsuAt(piece, ownerRow, ownerCol, cells, ignoreCompat=false)
   const destroyedCells = [];
   let promoteFlag = false;
   cells.forEach(([r,c]) => {
-    // 矛爪：敵の合体駒も相性無視で破壊できる
-    if (ignoreCompat) {
-      const fz = getFusionAt(r,c);
-      if (fz && fz.team !== piece.team) {
-        if (!destroyed.includes(fz.name)) {
-          destroyed.push(fz.name);
-          destroyFusion(fz);
-          destroyedCells.push([r,c]);
-        }
-        return;
-      }
-    }
+    // 合体駒には効かない（矛爪も含む）。合体駒を壊せるのは相性有利な駒での攻撃のみ。
+    if (getFusionAt(r,c)) return;
     const w = getWallAt(r,c);
     if (w) {
       if (w.team===piece.team) return; // 金剛力・矛爪とも味方の壁は壊さない
@@ -2294,13 +2756,16 @@ function executeKinJutsuAt(piece, ownerRow, ownerCol, cells, ignoreCompat=false)
     if (t.type==='ten' || t.type==='mei') {
       if (t.team===piece.team) return; // 金剛力・矛爪とも味方は巻き込まない
       destroyed.push(getPieceName(t));
+      logLoss(t);
       board[r][c] = null;
+      clearFrozenAt(r, c); // 凍っていた駒が消えたら凍結も解除
       destroyedCells.push([r,c]);
       return;
     }
     // 駒を破壊するときの共通処理：敵駒なら持ち駒として奪える（スロット空きがあれば）、
     // 自分の駒を巻き込んだ場合は消滅（リスク）。
     const takeOrVanish = (victim) => {
+      logLoss(victim); // 破壊された側の損失を記録
       if (victim.team !== piece.team && ['tane','in','you','gogyou'].includes(victim.type) && slotsFree(piece.team) > 0) {
         capturedPieces[piece.team].push(makePiece(victim.type, piece.team, victim.attr, false));
       }
@@ -2315,6 +2780,7 @@ function executeKinJutsuAt(piece, ownerRow, ownerCol, cells, ignoreCompat=false)
       destroyedCells.push([r,c]);
       takeOrVanish(t);
       board[r][c] = null;
+      clearFrozenAt(r, c); // 凍っていた駒が消えたら凍結も解除
     }
   });
   // （白虎への成りは「秋に金の術を2回使用」に統一。旧・金駒破壊条件は廃止）
@@ -2349,7 +2815,6 @@ function getUzuFrontCell(piece, row, col) {
 }
 // 渦の対象：周囲2マス以内の敵駒（王以外）。ただし目の前が空いていないと発動不可＆クールダウン中も不可
 function getUzuTargets(piece, row, col) {
-  if ((turnCount - (lastUzuCastTurn[piece.team] ?? -999)) < UZU_COOLDOWN) return [];
   const front = getUzuFrontCell(piece, row, col);
   if (!front) return [];
   if (board[front[0]][front[1]] || getWallAt(front[0],front[1]) || getFusionAt(front[0],front[1])) return []; // 目の前が埋まっていたら不可
@@ -2374,10 +2839,10 @@ function executeUzu(caster, sr, sc, tr, tc) {
   if (!victim) return;
   board[tr][tc] = null;
   board[front[0]][front[1]] = victim;
+  moveFrozenTo(tr, tc, front[0], front[1]); // 凍った駒を引き寄せた場合、凍結の記録も移す
   slideMove(tr, tc, front[0], front[1], false);
   // 引き寄せられた種駒は初期位置からずれるため、初手2マス移動を封じる
   if (victim.type === 'tane') victim.hasMoved = true;
-  lastUzuCastTurn[caster.team] = turnCount; // executeUzuの引数名はcaster
   lastJutsuPiece = caster; // 成り判定（冬に渦→玄武）
   try { flashEffect([[tr,tc],[front[0],front[1]]], 'fusion', '渦'); } catch(e){}
   showEffectBanner('術','渦');
@@ -2406,6 +2871,7 @@ function isFrozen(row, col) {
 
 // ターン経過時に氷結解除をチェック
 function checkFreezeExpire() {
+  try { resolveFusionOverlap(); } catch(e) {}   // 駒と合体駒の重なりがあれば解消する
   for (const t of ['ten','mei']) {
     const f = frozenPieces[t];
     if (!f) continue;
@@ -2418,11 +2884,6 @@ function checkFreezeExpire() {
 }
 
 
-// 壁駒に火属性を付与
-function setWallFireAttr(r, c) {
-  const wall = getWallAt(r, c);
-  if (wall) wall.fireAttr = true;
-}
 
 // 朱雀のワープ先壁駒リストを取得
 function getSuzakuWarpCells(team) {
@@ -2474,7 +2935,10 @@ function checkTsuchiCell(piece, r, c, cells) {
   if (t.team !== piece.team && canCapture(piece, t)) {
     cells.push([r, c, 'capture']); return true;
   }
-  // 味方駒・取れない敵：出現できないが通過は続く
+  // 倒せない敵駒（土にとっての木・金など弱点属性）は地中の進行を止める＝すり抜け不可。
+  // 相性で勝てない相手の下は掘り進めない、という考え方。
+  if (t.team !== piece.team) return false;
+  // 味方駒：出現はできないが、その下は通過できる
   return true;
 }
 
@@ -2553,14 +3017,6 @@ function checkWallCapture(r, c, attackerPiece=null) {
     const aAttr = attackerPiece.attr;
     if (aAttr !== '土' && aAttr !== '水') return false; // 破壊不可
   }
-  // 朱雀が身代わり判定
-  if (suzakuOnWall && suzakuOnWall.wallRow===r && suzakuOnWall.wallCol===c) {
-    // 壁を破壊、朱雀は無傷
-    removeWall(wall.id);
-    suzakuOnWall = null;
-    setLog('朱雀の身代わり！壁駒が破壊された。');
-    return 'shield'; // 身代わり発動
-  }
   const ownerKey = wall.ownerKey;
   removeWall(wall.id);
   const year = Math.floor(seasonIdx / 20);
@@ -2591,16 +3047,18 @@ function hasBonusAction(piece, team) {
 }
 
 function getBonusMoves(piece, row, col, board) {
+  // 季節ボーナスは「陣形を整えるための追加の一歩」。
+  // 相手の駒を取ることはできない（全ての駒に共通）。
+  // ※取れる仕様だと、桂馬のように飛び越える駒が1手で遠くの王を取れてしまい、
+  //   駒を並べて守ることが無意味になるため。
   const moves = [], captures = [];
   const dir = piece.team === 'ten' ? -1 : 1;
   const tryCell = (r, c) => {
     if (r<0||r>=9||c<0||c>=9) return;
-    // 合体駒：相性で破壊できるなら攻撃対象、できないなら進入不可
-    const fus = getFusionAt(r,c);
-    if (fus) { if (canCaptureFusion(piece, fus)) captures.push([r,c]); return; }
-    const t = board[r][c];
-    if (!t) { moves.push([r,c]); }
-    else if (t.team !== piece.team && canCapture(piece, t)) { captures.push([r,c]); }
+    if (getFusionAt(r,c)) return;   // 合体駒には進入できない
+    if (getWallAt(r,c)) return;     // 壁も壊せない
+    if (board[r][c]) return;        // 駒がいるマスへは進めない（＝捕獲できない）
+    moves.push([r,c]);
   };
   if (piece.type === 'tane') { tryCell(row+dir, col); }
   else { for (let dr=-1;dr<=1;dr++) for(let dc=-1;dc<=1;dc++) if(dr||dc) tryCell(row+dr,col+dc); }
@@ -2678,7 +3136,7 @@ function getMoves(piece, row, col, board) {
       return;
     }
     const wall = getWallAt(r,c);
-    if (wall) { if (canBreakWall(piece)) captures.push([r,c]); return; } // 壁は火・金のみ壊せる
+    if (wall) { if (canBreakWall(piece, wall)) captures.push([r,c]); return; } // 壁を壊せる駒だけ進入できる
     const t = board[r][c];
     if (!t) { moves.push([r,c]); return; }
     if (t.team===team) return;
@@ -2690,7 +3148,7 @@ function getMoves(piece, row, col, board) {
       const fus=getFusionAt(r,c);
       if (fus) { if (canCaptureFusion(piece,fus)) captures.push([r,c]); break; } // 合体駒で止まる
       const w=getWallAt(r,c);
-      if (w) { if (canBreakWall(piece)) captures.push([r,c]); break; } // 壁は火・金のみ壊せる（他は手前で停止）
+      if (w) { if (canBreakWall(piece, w)) captures.push([r,c]); break; } // 壊せる駒だけ進入、他は手前で停止
       const t=board[r][c];
       if (!t) { moves.push([r,c]); r+=dr; c+=dc; continue; }
       if (t.team===team) break;
@@ -2709,7 +3167,10 @@ function getMoves(piece, row, col, board) {
       else if (w) { break; } // 壁は通れず、手前で止まる（壊せない・すり抜け不可）
       else if (!t) { moves.push([r,c]); }
       else if (t.team!==team && canCapture(piece,t)) { captures.push([r,c]); }
-      // 味方駒・倒せない敵駒の上には止まれないが、すり抜けて先へ進む（breakしない）
+      // 倒せない敵駒（麒麟にとっての金・木など弱点属性）はすり抜けられない＝手前で止まる。
+      // 潜伏の地中移動と同じ考え方で、相性で勝てない相手は越えられない。
+      else if (t.team!==team) { break; }
+      // 味方駒の上には止まれないが、すり抜けて先へ進む
       r+=dr; c+=dc;
     }
   };
@@ -2741,18 +3202,22 @@ function getMoves(piece, row, col, board) {
       addMove(row+dir*2, col+1);
     }
   } else if (type==='gogyou' && attr==='火' && promoted) {
-    // 朱雀：8方向1マス（王将型・全方向に小回り）
+    // 朱雀：8方向1マス（王将型）＋桂馬跳び（未成りの火と同じ2点）。
+    // 術が壁ありきで控えめなぶん、移動力で存在感を持たせる。
     addMove(row-1,col); addMove(row+1,col);
     addMove(row,col-1); addMove(row,col+1);
     addMove(row-1,col-1); addMove(row-1,col+1);
     addMove(row+1,col-1); addMove(row+1,col+1);
+    // 桂馬跳び（未成りの火と同じ）：前方2マス＋左右1マスの2点へ跳ぶ
+    addMove(row+dir*2, col-1);
+    addMove(row+dir*2, col+1);
   } else if (type==='gogyou' && attr==='土' && !promoted) {
     // 土：横1列全体（障害物で止まる）＋前1マス＋後1マス
     slide(0, 1); slide(0, -1);
     addMove(row+dir, col);
     addMove(row-dir, col);
   } else if (type==='gogyou' && attr==='土' && promoted) {
-    // 麒麟：横1列を障害物すり抜けで移動（ターン消費なし）＋前後1マス
+    // 麒麟：横1列を移動（味方はすり抜け／倒せない敵の手前で停止）＋前後1マス
     phaseSlide(0, 1); phaseSlide(0, -1);
     addMove(row+dir, col);
     addMove(row-dir, col);
@@ -2789,7 +3254,9 @@ function getMoves(piece, row, col, board) {
       for (const [dr,dc] of GENBU_DIRS) {
         const nr=row+dr, nc=col+dc;
         if (nr<0||nr>=9||nc<0||nc>=9) continue;
-        if (getWallAt(nr,nc)) continue;
+        // 壁：壊せる駒なら攻撃対象（玄武＝水なので、朱雀が乗って炎を帯びた壁は壊せる）
+        const wl = getWallAt(nr,nc);
+        if (wl) { if (canBreakWall(piece, wl)) captures.push([nr,nc]); continue; }
         const fz = getFusionAt(nr,nc);
         if (fz) { if (genbuCanDefeatFusion(fz, team)) captures.push([nr,nc]); continue; }
         const t = board[nr][nc];
@@ -2798,7 +3265,7 @@ function getMoves(piece, row, col, board) {
       }
     }
   } else if (type==='gogyou' && attr==='木' && promoted) {
-    // 青龍：L字（縦横合計3マス・進路の途中で最大1回だけ直角に曲がれる）。
+    // 青龍：L字（縦横合計2マス・進路の途中で最大1回だけ直角に曲がれる）。
     // ハイライト表示・クリック実行と同じ getRyuReachable に一元化することで、
     // マス数表示・王手判定(isKingInCheck)・AI手生成(aiCollectMoves)をすべて
     // 本来の移動範囲と一致させる（旧・縦横2マス直進の定義は廃止）。
@@ -2834,7 +3301,7 @@ function getMoves(piece, row, col, board) {
 // ============================================================
 function initBoard() {
   board = Array.from({length:9}, () => Array(9).fill(null));
-  wallPieces = []; wallDestroyCount = {}; wallPlaceMode = false; wallPlaceOrigin = null; suzakuOnWall = null; hiddenTsuchi = []; tsuchiBurrowCount = {}; tsuchiAppearMode = null; kirinMark = {}; kirinMarkMode = null;
+  wallPieces = []; wallDestroyCount = {}; wallPlaceMode = false; wallPlaceOrigin = null; hiddenTsuchi = []; tsuchiBurrowCount = {}; tsuchiAppearMode = null; kirinMark = {}; kirinMarkMode = null;
 
   // 種列の相性運：
   // ・「自分で並べる」を選んだ場合（taneSymmetric=true）→ 対称配置にして正面を常にあいこに（実力勝負・運なし）
@@ -2883,7 +3350,7 @@ function updateGuide() {
   if (taikyokuGrantAvailable === currentTeam) {
     msg = '【太極】成らせたい自分の駒をタップしてください。';
   } else if (genkyokuMuAvailable === currentTeam) {
-    msg = '【玄極】「無」にしたい相手の駒をタップしてください（王は不可）。';
+    msg = '【玄極】ひとつ前の姿へ戻したい相手の駒をタップ（五神→五行→種→無／王は不可）。';
   } else if (suishouActive === currentTeam && !suishouMoveState) {
     msg = '【水晶】操作したい相手の駒をタップしてください。';
   } else if (suishouMoveState) {
@@ -2907,8 +3374,7 @@ function updateGuide() {
     else if ((turnCount - (lastFreezeCastTurn[currentTeam] ?? -999)) < FREEZE_COOLDOWN) msg = `【氷結】クールダウン中（あと${FREEZE_COOLDOWN - (turnCount - (lastFreezeCastTurn[currentTeam] ?? -999))}ターン）。連発はできません。`;
     else msg = '【氷結】凍らせる相手の駒をタップしてください。';
   } else if (actionMode==='uzu') {
-    if ((turnCount - (lastUzuCastTurn[currentTeam] ?? -999)) < UZU_COOLDOWN) msg = `【渦】クールダウン中（あと${UZU_COOLDOWN - (turnCount - (lastUzuCastTurn[currentTeam] ?? -999))}ターン）。`;
-    else msg = '【渦】引き寄せる敵駒（周囲2マス内）をタップ。目の前が空いている必要があります。';
+    msg = '【渦】引き寄せる駒（周囲2マス内）をタップ。目の前が空いている必要があります。';
   } else if (actionMode==='hitame') {
     msg = '【炎溜め】火の駒をもう一度タップすると炎を溜めます。';
   } else if (actionMode==='burrow') {
@@ -2941,14 +3407,17 @@ function updateGuide() {
 // 移動範囲のミニグリッド図を生成（5×5、中央=駒、移動可能マスを色付け）
 // pieceSpec: {type, attr, promoted}
 function renderMoveGrid(pieceSpec, opts={}) {
-  const size = opts.size || 5;
-  const center = Math.floor(size/2);
+  // 図のサイズは移動範囲に合わせて自動で決める（5×5固定だと遠くまで動く駒が入りきらない）。
+  // 実際の移動先を先に計算し、中心からの最大距離に合わせて拡げる。
+  let size = opts.size || 0;
+  let center = 0;
   // 仮想盤面（size×size）の中央に駒を置いてgetMovesを呼ぶ
   const N = 9;
   const savedBoard = board;
   const tb = Array.from({length:N}, () => Array(N).fill(null));
   const br = 4, bc = 4; // 9×9盤の中央
   const piece = makePiece(pieceSpec.type, 'ten', pieceSpec.attr||null, pieceSpec.promoted||false);
+  if (pieceSpec.hasMoved) piece.hasMoved = true; // 種駒の「通常（1マス）」を描くために使う
   // 種駒の初手2マスを見せるため hasMoved=false
   tb[br][bc] = piece;
   board = tb;
@@ -2965,6 +3434,19 @@ function renderMoveGrid(pieceSpec, opts={}) {
   }
   board = savedBoard;
 
+  // 中心から最も遠い移動先に合わせて図の広さを決める（最小5×5、最大9×9）
+  if (!size) {
+    let maxD = 1;
+    for (const k of [...movable, ...capturable]) {
+      const [rr,cc] = k.split(',').map(Number);
+      maxD = Math.max(maxD, Math.abs(rr-br), Math.abs(cc-bc));
+    }
+    center = Math.min(4, Math.max(2, maxD));
+    size = center*2 + 1;
+  } else {
+    center = Math.floor(size/2);
+  }
+
   // ten は上向き(前方=上)。図では上=row小＝前方として素直に描画
   let html = `<div style="display:grid;grid-template-columns:repeat(${size},1fr);gap:2px;width:${size*26}px;margin:8px auto;">`;
   for (let dr=-center; dr<=center; dr++) {
@@ -2973,48 +3455,313 @@ function renderMoveGrid(pieceSpec, opts={}) {
       const key = `${r},${c}`;
       let bg = 'rgba(200,170,110,0.25)'; // 通常マス
       let label = '';
-      if (dr===0 && dc===0) { bg = 'rgba(200,150,12,0.7)'; label = '駒'; }
-      else if (movable.has(key)) bg = 'rgba(255,220,80,0.7)';
-      else if (capturable.has(key)) bg = 'rgba(220,90,90,0.6)';
+      if (dr===0 && dc===0) {
+        // 中央は実際の駒の見た目を表示（どこが起点か直感的に分かるように）
+        bg = 'rgba(200,150,12,0.35)';
+        try { label = mPieceArt(pieceSpec, 30); } catch(e) { label = '駒'; }
+      }
+      // 説明図では移動と攻撃を区別しない（仮想盤に敵がいないため、赤で示す意味がない）
+      else if (movable.has(key) || capturable.has(key)) bg = 'rgba(255,220,80,0.7)';
       html += `<div style="aspect-ratio:1;background:${bg};border-radius:2px;display:flex;align-items:center;justify-content:center;font-size:0.6rem;color:#1a1008;">${label}</div>`;
     }
   }
   html += '</div>';
   const noteLabel = opts.dash
     ? '前方=上　<span style="color:rgba(255,210,80,1)">黄=この8方向へ直進</span>'
-    : '前方=上　<span style="color:rgba(255,210,80,1)">黄=移動</span>　<span style="color:rgba(230,120,120,1)">赤=攻撃</span>';
+    : '前方=上　<span style="color:rgba(255,210,80,1)">黄=動ける場所</span>';
   html += `<p style="font-size:0.65rem;opacity:0.6;text-align:center;margin-top:-2px;">${noteLabel}</p>`;
   return html;
 }
 
 // 説明書データ（グループごと）
-// ===== 解説動画（YouTube）URL：ここに各動画のURLを貼るだけで有効化されます（空＝準備中表示）=====
-const VIDEO_URLS = {
-  basics:  '',   // 相性（相生・相剋）の解説動画
-  jutsu:   '',   // 術の解説動画
-  fusion:  '',   // 合体の解説動画
-  season:  '',   // 季節の解説動画
-  promote: '',   // 成り（五神駒）の解説動画
-};
+const MANUAL_ATTR_COLOR = { '木':'#7ec87e', '火':'#e08050', '土':'#d0b060', '金':'#e8e8f0', '水':'#7ab0d8' };
+// 説明書のボタン背景に描く情景SVG（季節ヘッダーと同じ発想で、その項目の「気」を風景で表す）
+// 背景全面をしっかり塗り、要素も大きく描く。文字はこの上に暗幕を重ねて読ませる。
+function mScene(key) {
+  const S = {
+    // 天／冥：金の陽と銀の月が対をなす空
+    king: { c1:'#4a3a18', c2:'#1e1a24', art:`
+      <circle cx="62" cy="34" r="30" fill="#f0d060" opacity="0.85"/>
+      <circle cx="62" cy="34" r="42" fill="#f0d060" opacity="0.2"/>
+      <circle cx="238" cy="34" r="26" fill="#d8e0f0" opacity="0.8"/>
+      <circle cx="248" cy="28" r="22" fill="#1e1a24" opacity="0.9"/>
+      <path d="M0 66 Q75 46 150 60 T300 52 L300 84 L0 84Z" fill="#2a2214"/>` },
+    // 陰／陽：白と黒が巡る
+    inyou: { c1:'#3a3450', c2:'#12101a', art:`
+      <circle cx="150" cy="42" r="38" fill="#f0ecf8" opacity="0.9"/>
+      <path d="M150 4 a38 38 0 0 1 0 76 a19 19 0 0 1 0-38 a19 19 0 0 0 0-38Z" fill="#16121e"/>
+      <circle cx="150" cy="23" r="7" fill="#16121e"/>
+      <circle cx="150" cy="61" r="7" fill="#f0ecf8"/>` },
+    // 五行：五色が大きく並ぶ
+    gogyou: { c1:'#2e2a1e', c2:'#181510', art:`
+      <rect x="0"   y="0" width="60" height="84" fill="#5aa855"/>
+      <rect x="60"  y="0" width="60" height="84" fill="#d05a2a"/>
+      <rect x="120" y="0" width="60" height="84" fill="#c09030"/>
+      <rect x="180" y="0" width="60" height="84" fill="#c8c8d8"/>
+      <rect x="240" y="0" width="60" height="84" fill="#3a80c0"/>` },
+    // 種：大地から芽吹く
+    seed: { c1:'#5a7a3a', c2:'#2a3a18', art:`
+      <rect x="0" y="48" width="300" height="36" fill="#4a3418"/>
+      <g stroke="#a8e880" stroke-width="4" fill="none" stroke-linecap="round">
+        <path d="M60 50 v-24 M60 32 q-14-10-20-3 M60 32 q14-10 20-3"/>
+        <path d="M150 50 v-32 M150 28 q-16-12-23-4 M150 28 q16-12 23-4"/>
+        <path d="M240 50 v-22 M240 34 q-13-9-19-2 M240 34 q13-9 19-2"/>
+      </g>` },
+    // 合体：二つの気が重なる
+    fusion: { c1:'#3a2a58', c2:'#120e1e', art:`
+      <g transform="translate(150,42)">
+        <!-- 二重円と八角の結界 -->
+        <circle r="36" fill="none" stroke="#c8a8f0" stroke-width="2" opacity="0.85"/>
+        <circle r="29" fill="none" stroke="#c8a8f0" stroke-width="1" opacity="0.55"/>
+        <circle r="15" fill="none" stroke="#e0c8ff" stroke-width="1.5" opacity="0.8"/>
+        <!-- 内接する二つの正方形（八芒星＝結界の意匠） -->
+        <rect x="-21" y="-21" width="42" height="42" fill="none" stroke="#d8b8ff" stroke-width="1.6" opacity="0.8"/>
+        <rect x="-21" y="-21" width="42" height="42" fill="none" stroke="#d8b8ff" stroke-width="1.6" opacity="0.8" transform="rotate(45)"/>
+        <!-- 四方に伸びる霊符の線 -->
+        <g stroke="#e8d0ff" stroke-width="1.2" opacity="0.5">
+          <path d="M0 -36 V-44"/><path d="M0 36 V44"/><path d="M-36 0 H-44"/><path d="M36 0 H44"/>
+          <path d="M-25 -25 L-31 -31"/><path d="M25 25 L31 31"/><path d="M25 -25 L31 -31"/><path d="M-25 25 L-31 31"/>
+        </g>
+        <!-- 中央の気 -->
+        <circle r="7" fill="#f0e0ff" opacity="0.9"/>
+      </g>` },
+    // 相性：五行が円環をなす
+    aisho: { c1:'#3a3a24', c2:'#16160e', art:`
+      <circle cx="150" cy="42" r="32" fill="none" stroke="#d0b060" stroke-width="4" opacity="0.9"/>
+      <circle cx="150" cy="10" r="11" fill="#5aa855"/>
+      <circle cx="180" cy="31" r="11" fill="#d05a2a"/>
+      <circle cx="169" cy="66" r="11" fill="#c09030"/>
+      <circle cx="131" cy="66" r="11" fill="#c8c8d8"/>
+      <circle cx="120" cy="31" r="11" fill="#3a80c0"/>` },
+    // 季節：四季が横に移ろう
+    season: { c1:'#2a2a22', c2:'#161610', art:`
+      <!-- 春（新緑）→ 土用 → 夏（陽） → 土用 → 秋（山と紅葉）→ 土用 → 冬（雪）と移ろう -->
+      <defs><linearGradient id="mg-season-sky" x1="0" y1="0" x2="1" y2="0">
+        <stop offset="0%"   stop-color="#bfe6a8"/><stop offset="18%"  stop-color="#e8d9a0"/>
+        <stop offset="33%"  stop-color="#ffd39a"/><stop offset="50%"  stop-color="#e8d9a0"/>
+        <stop offset="66%"  stop-color="#f0cf9a"/><stop offset="82%"  stop-color="#e8d9a0"/>
+        <stop offset="100%" stop-color="#c4d2de"/>
+      </linearGradient>
+      <linearGradient id="mg-season-ground" x1="0" y1="0" x2="1" y2="0">
+        <stop offset="0%"   stop-color="#7dc860"/><stop offset="18%"  stop-color="#c9a83a"/>
+        <stop offset="33%"  stop-color="#e88a4a"/><stop offset="50%"  stop-color="#c9a83a"/>
+        <stop offset="66%"  stop-color="#c9a84e"/><stop offset="82%"  stop-color="#c9a83a"/>
+        <stop offset="100%" stop-color="#cdd6df"/>
+      </linearGradient></defs>
+      <rect width="300" height="84" fill="url(#mg-season-sky)"/>
+      <rect y="56" width="300" height="28" fill="url(#mg-season-ground)"/>
+      <!-- 春：若草 -->
+      <ellipse cx="24" cy="66" rx="34" ry="12" fill="#8fd070" opacity="0.75"/>
+      <!-- 夏：陽 -->
+      <circle cx="100" cy="30" r="15" fill="#fff2c0"/><circle cx="100" cy="30" r="11" fill="#ffd85a"/>
+      <!-- 秋：山と実り -->
+      <path d="M170 60 L200 34 L230 60 Z" fill="#b8923f" opacity="0.9"/>
+      <circle cx="196" cy="50" r="2.5" fill="#d4622e"/><circle cx="212" cy="55" r="2.5" fill="#d4622e"/>
+      <!-- 冬：雪 -->
+      <g stroke="#8fa4b6" stroke-width="1.5" opacity="0.9">
+        <g transform="translate(268,26)"><path d="M0 -7 V7 M-7 0 H7 M-5 -5 L5 5 M5 -5 L-5 5"/></g>
+        <g transform="translate(288,46)"><path d="M0 -5 V5 M-5 0 H5"/></g>
+      </g>
+      <ellipse cx="280" cy="72" rx="40" ry="12" fill="#dbe3ea" opacity="0.8"/>` },
+    // 陣：盤の上下に領域が広がる
+    zone: { c1:'#c8a870', c2:'#a88850', art:`
+      <!-- 盤と同じ木の色。格子で9×9を表し、上下3列に陣の枠を重ねる -->
+      <rect width="300" height="84" fill="#c9a86c"/>
+      <g stroke="#8a6a3a" stroke-width="1" opacity="0.55">
+        <path d="M0 9.3H300 M0 18.6H300 M0 28H300 M0 37.3H300 M0 46.6H300 M0 56H300 M0 65.3H300 M0 74.6H300"/>
+        <path d="M33.3 0V84 M66.6 0V84 M100 0V84 M133.3 0V84 M166.6 0V84 M200 0V84 M233.3 0V84 M266.6 0V84"/>
+      </g>
+      <rect x="0" y="0"  width="300" height="28" fill="#8a3030" opacity="0.28"/>
+      <rect x="0" y="56" width="300" height="28" fill="#2a5a80" opacity="0.28"/>
+      <g stroke="#6a4a20" stroke-width="1.6" opacity="0.7">
+        <path d="M0 28H300"/><path d="M0 56H300"/>
+      </g>` },
+    // 術：立ちのぼる気
+    jutsu: { c1:'#4a3068', c2:'#160e24', art:`
+      <g stroke="#e0b8f0" stroke-width="5" fill="none" stroke-linecap="round" opacity="0.9">
+        <path d="M70 84 q-16-22 0-38 q16-18 0-32"/>
+        <path d="M150 84 q-18-24 0-42 q18-20 0-34"/>
+        <path d="M230 84 q-16-22 0-38 q16-18 0-32"/>
+      </g>` },
+    // 持ち駒：手元に控える駒
+    hand: { c1:'#4a4028', c2:'#1a1610', art:`
+      <g fill="#e8d8a0">
+        <rect x="52"  y="26" width="40" height="46" rx="4"/>
+        <rect x="102" y="18" width="40" height="54" rx="4"/>
+        <rect x="152" y="26" width="40" height="46" rx="4"/>
+        <rect x="202" y="34" width="40" height="38" rx="4"/>
+      </g>` },
+    // 無：すべてが失われた闇
+    mu: { c1:'#2a2a34', c2:'#08080c', art:`
+      <circle cx="150" cy="42" r="40" fill="#000"/>
+      <circle cx="150" cy="42" r="40" fill="none" stroke="#8890a8" stroke-width="3" opacity="0.8"/>` },
+  };
+  const d = S[key] || S.gogyou;
+  return `<svg viewBox="0 0 300 84" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg"
+    style="position:absolute;inset:0;width:100%;height:100%;">
+    <defs><linearGradient id="mg-${key}" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="${d.c1}"/><stop offset="100%" stop-color="${d.c2}"/>
+    </linearGradient></defs>
+    <rect width="300" height="84" fill="url(#mg-${key})"/>
+    ${d.art}
+  </svg>`;
+}
 
-// 詳しい遊び方の各ページに置く「▶ 動画で見る」ボタン（URLがあれば有効、なければ準備中）
-function videoButtonHtml(key) {
-  const url = VIDEO_URLS[key];
-  if (url) {
-    return `<button onclick="openVideo('${key}')" style="margin:6px 0 2px;padding:8px 14px;background:rgba(200,40,40,0.22);border:1px solid rgba(230,90,90,0.7);color:#ffd0d0;font-family:inherit;font-size:0.85rem;border-radius:6px;cursor:pointer;">▶ 動画で見る</button>`;
+// 説明書用：実際の盤上と同じ見た目の駒を1つ描く（HTML文字列を返す）
+function mPieceArt(spec, size) {
+  const w = size || 56;
+  const piece = { type:spec.type, team:spec.team||'ten', attr:spec.attr||null, promoted:!!spec.promoted };
+  const gk = (typeof goshinKeyOf === 'function') ? goshinKeyOf(piece) : null;
+  let inner = '';
+  let bg = 'var(--washi)';
+  let extraStyle = '';
+  if (gk && typeof GOSHIN_ART !== 'undefined' && GOSHIN_ART[gk]) {
+    const art = GOSHIN_ART[gk];
+    bg = art.bg;
+    extraStyle = `box-shadow:0 0 ${Math.round(w*0.14)}px ${art.glow};`;
+    if (art.char) {
+      inner = `<span style="color:${art.ink};font-size:${Math.round(w*0.5)}px;font-weight:bold;line-height:1;">${art.char}</span>`;
+    } else {
+      inner = `<span style="width:76%;height:76%;display:block;"><svg viewBox="0 0 100 100" width="100%" height="100%" preserveAspectRatio="xMidYMid meet"><g fill="${art.ink}">${art.svg}</g></svg></span>`;
+    }
+  } else if (piece.type === 'mu') {
+    bg = '#0a0a0a';
+    inner = `<span style="color:#f5f5f5;font-size:${Math.round(w*0.34)}px;">無</span>`;
+  } else {
+    if (piece.type === 'tane') bg = '#c4975a';
+    else if (piece.type === 'in') bg = '#1a1a1a';
+    else if (piece.type === 'you') bg = '#f5f5f5';
+    else if (piece.type === 'ten') bg = 'linear-gradient(135deg, #f0d060, #c8960c)';
+    else if (piece.type === 'mei') bg = 'linear-gradient(135deg, #d8dce2, #9ca3af)';
+    // 五行駒は属性色の帯を上に重ねる
+    let band = '';
+    if (piece.attr && typeof ATTR_COLOR !== 'undefined' && ATTR_COLOR[piece.attr] && piece.type !== 'tane') {
+      band = `<span style="position:absolute;top:0;left:0;right:0;height:26%;background:${ATTR_COLOR[piece.attr]};"></span>`;
+    }
+    const ink = (piece.type === 'in') ? '#f0f0f0' : '#2a1f14';
+    const label = (typeof getPieceName === 'function') ? getPieceName(piece) : (piece.attr || '');
+    inner = `${band}<span style="position:relative;color:${ink};font-size:${Math.round(w*0.34)}px;font-weight:bold;line-height:1;">${label}</span>`;
   }
-  return `<span style="display:inline-block;margin:6px 0 2px;padding:8px 14px;background:rgba(120,120,130,0.15);border:1px solid rgba(160,160,170,0.35);color:#9a9aa2;font-size:0.85rem;border-radius:6px;">▶ 動画（準備中）</span>`;
+  // 冥（後手）は盤上と同じく180度回転させる
+  const rot = (piece.team === 'mei') ? 'transform:rotate(180deg);' : '';
+  const outline = (piece.team === 'mei')
+    ? 'outline:3px solid #98a2ae;outline-offset:-3px;'
+    : 'outline:3px solid var(--gold);outline-offset:-3px;';
+  return `<span style="display:inline-flex;align-items:center;justify-content:center;position:relative;flex-shrink:0;
+    width:${w}px;height:${w}px;background:${bg};${outline}${extraStyle}${rot}
+    clip-path:polygon(50% 2%, 95% 20%, 98% 98%, 2% 98%, 5% 20%);
+    box-shadow:2px 3px 6px rgba(0,0,0,0.4);overflow:hidden;">${inner}</span>`;
 }
-
-function openVideo(key) {
-  const url = VIDEO_URLS[key];
-  if (url) window.open(url, '_blank', 'noopener');
+// 駒の見た目を並べて見せるブロック（説明用のラベルつき）
+function mPieceShowcase(list, size) {
+  return `<div style="display:flex;gap:14px;justify-content:center;align-items:flex-end;margin:8px 0 10px;">
+    ${list.map(it => `<div style="text-align:center;">
+      ${mPieceArt(it.spec, size)}
+      ${it.label ? `<div style="font-size:0.7rem;opacity:0.7;margin-top:4px;">${it.label}</div>` : ''}
+    </div>`).join('')}</div>`;
 }
-
-
+// 見出し（小）
+function mSec(title, color) {
+  return `<div style="margin:14px 0 6px;padding-left:8px;border-left:3px solid ${color||'var(--gold)'};font-size:0.92rem;color:${color||'var(--gold)'};letter-spacing:0.08em;">${title}</div>`;
+}
+// 本文（短く）
+function mText(t) { return `<p style="font-size:0.82rem;line-height:1.7;margin:4px 0;">${t}</p>`; }
+// 補足（小さめ）
+function mNote(t) { return `<p style="font-size:0.75rem;line-height:1.6;margin:4px 0;opacity:0.8;">${t}</p>`; }
+// 箇条書き（①②のように選択肢を並べる）
+function mList(items) {
+  return '<div style="margin:6px 0;">' + items.map(it =>
+    `<div style="display:flex;gap:6px;font-size:0.8rem;line-height:1.65;margin:5px 0;">
+       <span style="color:var(--gold);flex-shrink:0;">${it.mark}</span>
+       <span><b>${it.title}</b>…${it.text}</span></div>`).join('') + '</div>';
+}
+// 強調（重要な数値・キーワード）
+function mKey(t) { return `<b style="color:var(--gold);">${t}</b>`; }
+// 五行の属性ページ（移動・術・成り駒を1ページにまとめる）
+// 合体駒（駒としての説明。効果は1つずつ見られるようにする）
+const MANUAL_FUSIONS = [
+  { name:'樹海', mat:'木 ＋ 水', color:'#7ec87e', weak:'木',
+    effect:'相手のターンをスキップさせ、同時に周囲へ壁を最大2つ生やします。',
+    hint:'相手の手数を奪いながら、盤を壁で覆っていきます。' },
+  { name:'大火', mat:'火 ＋ 木', color:'#e08050', weak:'火',
+    effect:'隣接する敵駒を1つ焼き払います。',
+    hint:'敵陣に切り込んで置くほど効果を発揮します。' },
+  { name:'焚沃', mat:'土 ＋ 火', color:'#d0b060', weak:'土',
+    effect:'周囲に種駒を1つ生み出します（生まれた種駒は初手2マス移動ができません）。',
+    hint:'駒を増やし続けられる唯一の手段です。' },
+  { name:'鉱山', mat:'金 ＋ 土', color:'#e8e8f0', weak:'金',
+    effect:'そのターンだけ、味方全体が相性を無視して戦えるようになります。',
+    hint:'普段は倒せない相手を討ち取る好機になります。' },
+  { name:'水晶', mat:'水 ＋ 金', color:'#7ab0d8', weak:'水',
+    effect:'相手の駒を1つ操作して動かせます（王も操作できます）。',
+    hint:'相手の守りを内側から崩したり、王を引きずり出せます。' },
+  { name:'玄極', mat:'陰 ＋ 陽', color:'#b09ad8', weak:null,
+    effect:'相手の成りを封じます。さらに8ターンごとに、相手の駒を1つ<b>ひとつ前の姿へ戻します</b>（五神駒→五行駒→種駒→無。王は対象外）。',
+    hint:'段階を踏んで削るため、育てた駒ほど元に戻すのに手間がかかります。最後は「無」になり、動くことも戦うこともできません。' },
+  { name:'太極', mat:'陽 ＋ 陰', color:'#e8d9a0', weak:null,
+    effect:'8ターンごとに、自分の駒を1つ成らせます。',
+    hint:'条件を待たずに成れる、成長の切り札です。' },
+];
+const MANUAL_ATTRS = {
+  '木': {
+    title:'木', catch:'伸ばして、囲う',
+    move:'斜め4方向に1マスずつ動けます（前後の斜め）。',
+    jutsu:{ name:'壁作成', text:`盤上の空きマスに壁を1つ置きます（自陣にも置けます）。壁は駒の進行をさえぎり、壊せるのは${mKey('火・金・陰・陽・王')}だけです。` },
+    jutsuNote:`同じ駒が置ける壁は${'盤上3個まで'}。4個目を置くと最も古い壁が消えます。`,
+    goshin:{ name:'青龍', move:'縦横に1マスずつ、合計2マスまで進みます（途中で1回だけ曲がれます）。通った道すべてに壁が残ります。',
+             jutsu:'移動そのものが術です。通った道すべてに壁が残ります（軌跡は常に最新の1本だけ）。' },
+    promote:'春に「壁作成」を使うと成れます（任意）。',
+  },
+  '火': {
+    title:'火', catch:'跳んで、焼く',
+    move:'将棋の桂馬と同じく、前方2マス＋左右1マスの2点へ跳びます（後ろへは進めません）。間の駒は飛び越えます。',
+    jutsu:{ name:'炎溜め', text:`炎を溜めると${mKey('6ターンのカウントダウン')}が始まります（駒に残り数が表示されます）。溜めた炎の使い道は2つ。` },
+    jutsuList:[
+      { mark:'①', title:'移動範囲の拡張', text:'カウント中は<b>チェスのナイトと同じ8方向</b>へ跳べます。動くと炎を使い切り、カウントは消えます。' },
+      { mark:'②', title:'大暴発', text:'カウントが0になると、<b>自身を道連れに周囲8マスの駒を無差別に破壊</b>します（相性を無視し、敵味方も王も巻き込みます）。' },
+    ],
+    goshin:{ name:'朱雀', move:'8方向に1マス、加えて桂馬跳びもできます。小回りと跳躍を併せ持ちます。',
+             jutsu:'任意の壁へ飛び移り、<b>その壁を焼き払います</b>。離れた場所の壁を消しながら移動できます。' },
+    promote:'夏に「炎溜め」を使うと成れます（任意）。',
+  },
+  '土': {
+    title:'土', catch:'潜って、待つ',
+    move:'左右は端まで、前後は1マスずつ動けます。',
+    jutsu:{ name:'潜伏', text:`地中に潜り、次の自分の番に出現します。出現できるのは${mKey('もといた場所の左右と、前1マス')}です。` },
+    jutsuList:[
+      { mark:'①', title:'味方の下は通れる', text:'味方の駒の下をくぐって、その先へ出現できます。' },
+      { mark:'②', title:'倒せない敵は越えられない', text:'木・金など倒せない敵と、壁・合体駒の手前で止まります。倒せる敵の位置に出現すれば、その駒を倒せます。' },
+    ],
+    goshin:{ name:'麒麟', move:'左右へ長く動けます。味方はすり抜けられますが、倒せない敵と壁・合体駒の手前では止まります。前後は1マス。',
+             jutsu:'味方の駒1つに印をつけ、その駒と位置を入れ替えます。印は土用に付け替えられます。' },
+    promote:'土用に「潜伏」を使うと成れます（任意）。',
+  },
+  '金': {
+    title:'金', catch:'正面から、断つ',
+    move:'将棋の金将と同じ。前方3方向・左右・後ろの6マスへ1マスずつ動けます。',
+    jutsu:{ name:'金剛力', text:`目の前2マス（縦一列）にいる${mKey('敵駒だけ')}を破壊します。倒せるのは土・木・金属性の駒に加え、${mKey('陰・陽・王')}です（無属性の駒は相性を無視されるため）。` },
+    jutsuNote:'味方は巻き込みません。敵の壁も壊せますが、合体駒には効きません。',
+    goshin:{ name:'白虎', move:'金と同じ動きです。',
+             jutsu:'矛爪。目の前2マスの敵を、相性を無視して討ち取ります（王も討てます）。味方と合体駒には効きません。' },
+    promote:'秋に「金剛力」を使うと成れます（任意）。',
+  },
+  '水': {
+    title:'水', catch:'引き寄せ、止める',
+    move:'前方へ端まで走れます（左右・後退はできません）。',
+    jutsu:{ name:'渦', text:`周囲2マス以内の駒1つを、${mKey('自分の目の前へ引き寄せます')}（王も引き寄せられます）。前にしか進めない弱点を補う技です。` },
+    jutsuNote:'目の前のマスが空いているときだけ使えます。引き寄せた相手は、次に前進すれば倒せます。',
+    goshin:{ name:'玄武', move:'術で2つの動きを切り替えます。通常＝全方向1マスで、金・火・陰・陽・王なら隣の敵を倒せます。スライド＝8方向へ一直線に滑ります。',
+             jutsu:'移動切替（手番を消費しません）。スライドで敵にぶつかると、その駒を次の自分の番まで凍らせます。凍らせた敵は次の番に通常モードで倒せます。' },
+    promote:'冬に「渦」を使うと成れます（任意）。',
+  },
+};
 const MANUAL_GROUPS = [
   { id:1, title:'天 / 冥（王）', render: () => `
     <p>盤の最重要駒。どちらかが倒されると勝敗が決まります。</p>
+    ${mPieceShowcase([
+      { spec:{type:'ten', team:'ten'}, label:'天（金）' },
+      { spec:{type:'mei', team:'mei'}, label:'冥（銀）' },
+    ], 56)}
     <p>全方向に1マスずつ動けます。属性・術・成りはなく、相性を無視して戦えます。</p>
     ${renderMoveGrid({type:'mei'})}
   `},
@@ -3029,102 +3776,138 @@ const MANUAL_GROUPS = [
     <p style="color:var(--gold);margin-top:10px;"><b>耀白龍（陽の成り）</b>：飛車の動きに加え、斜め1マスも動けます。</p>
     ${renderMoveGrid({type:'you',promoted:true})}
   `},
-  { id:3, title:'五行駒（木火土金水）', render: () => `
-    <p>属性を持ち、固有の術が使える駒です。相性が合う相手しか倒せません。</p>
-    <p><b>木</b>：斜め1マス。術＝壁作成。自陣（自分側3列）以外の空きマスに壁を1つ置きます。壁は駒の移動を遮ります。壁を壊せるのは<b>火・金・陰・陽</b>の駒だけで、木・水・土（青龍・玄武・麒麟を含む）と王は壁の手前で止まります。設置は1体につき盤上3つまで。<br>※青龍が通った跡に残る壁は<b>緑の破線「道」</b>で表示され、この3つの制限とは別枠です（青龍が次に動くと消えて置き直されます）。</p>
-    ${renderMoveGrid({type:'gogyou',attr:'木'})}
-    <p><b>火</b>：将棋の桂馬と同じく、前方2マス・左右1マスの2点へ跳ぶ（後ろには進めません）。術＝炎溜め。炎を溜めた火駒を動かすと、ナイト（チェス）の動きで跳んで<b>溜めを使います</b>（動いたら必ず消費）。<br>溜めると<b>時限（6ターン）</b>が始まり、火駒に残りカウント（6→…→1→0）が出ます。<br>・<b>0になると強制「大暴発」</b>：周囲8マスの駒を<b>相性を無視して、敵味方問わず</b>破壊（火駒も消滅）。<b>王も巻き込みます</b>（王が消えればその場で決着）。<br>・待たずに<b>「💥即起爆」</b>ボタンを押せば、<b>相性で倒せる敵だけ</b>を破壊（<b>味方は巻き込まない</b>／火駒は消滅）。<br>溜めた火を動かせば炎を消費してカウントは消えます。強力だが自爆を伴う諸刃の剣です。</p>
-    ${renderMoveGrid({type:'gogyou',attr:'火'})}
-    <p><b>土</b>：左右は端まで、前後は1マス。術＝潜伏。地中に潜り、次の自分の番に、元の位置から左右（端まで・障害物を無視）または前1マスの空きマスへ再出現します。</p>
-    ${renderMoveGrid({type:'gogyou',attr:'土'})}
-    <p><b>金</b>：金将の動き（前3・横・後）。術＝金剛力。目の前2マス（縦一列）にいる<b>敵駒</b>のうち、金で倒せる相手（土・木）と金属性の駒を破壊します（味方は巻き込みません。王も倒せます）。</p>
-    ${renderMoveGrid({type:'gogyou',attr:'金'})}
-    <p><b>水</b>：<b>前方にのみ</b>端まで走れます（香車のような動き。左右・後退はできません）。横へは合体駒などのボーナス移動で補います。<br>術＝<b>渦（うず）</b>：周囲2マス以内の敵駒1体（王以外）を、<b>水の目の前へ引き寄せます</b>。前にしか進めない弱点を補い、引き寄せた敵を次の前進で倒せます。目の前が空いているときだけ発動でき、少しの間おいてから再び使えます（クールダウン）。</p>
-    ${renderMoveGrid({type:'gogyou',attr:'水'})}
-    <p>術は自陣では使えません。各属性ごとの条件を満たすと五神駒に成ります（成り条件は「4. 五神駒」の項目に記載）。</p>
+  { id:3, title:'合体の仕組み', render: () => `
+    <p>相生の関係にある2つの駒（<b>盤上の素体</b>＋<b>持ち駒の素材</b>）を合わせると、盤の2×2を占有する<b>合体駒</b>ができます。</p>
+    <p style="color:var(--gold);margin-top:10px;"><b>作り方</b></p>
+    <p>持ち駒から素材を選び、盤上の素体をタップして配置します。敵陣にも置けますが、<b>王を巻き込む位置には置けません</b>。</p>
+    <p style="color:var(--gold);margin-top:10px;"><b>巻き込んだ駒</b></p>
+    <p>2×2の範囲にいた駒は盤から取り除かれます。<br>
+    ・<b>敵の駒</b>…奪って持ち駒になります。<br>
+    ・<b>味方の駒</b>…持ち駒に戻ります。<br>
+    ・<b>素体と素材</b>…合体の代償として失われます。</p>
+    <p style="color:var(--gold);margin-top:10px;"><b>持続と破壊</b></p>
+    <p>・合体駒は<b>動けません</b>が、盤面全体に効果を及ぼします。<br>
+    ・効果は毎ターン<b>20%</b>の確率で発動し、<b>対応する季節には50%</b>に上がります。<br>
+    ・<b>40ターン（1年）</b>で自然に消滅します。<br>
+    ・同時に持てるのは<b>1つだけ</b>。作成から40ターンは次を作れません。<br>
+    ・素体と同じ弱点を持ち、相性で勝てる駒に破壊されます（玄極・太極はどの駒でも破壊できます）。</p>
+    <p style="color:var(--gold);margin-top:10px;"><b>散（解除）</b></p>
+    <p>自分の合体駒をタップすると<b>「散」</b>で解除できます（1手消費）。素体が盤に、素材が持ち駒に戻ります。ただし次の合体までの40ターンは短縮されません。</p>
+    <p style="font-size:0.78rem;opacity:0.85;">※それぞれの効果は「駒の説明 → 合体駒」で見られます。</p>
   `},
-  { id:4, title:'五神駒（成った五行駒）', render: () => `
-    <p>五行駒が成った姿。より強力な術を持ちます。</p>
-    <p style="color:var(--gold);"><b>成り条件（共通）</b>：その五行の<b>対応する季節</b>のあいだに、その五行の<b>術を1回</b>使うと五神駒に成れます（成るかどうかは任意で選べます）。<br>木＝春／火＝夏／土＝土用／金＝秋／水＝冬。</p>
-    <p style="color:var(--gold);margin-top:10px;"><b>青龍</b>（木の成り）</p>
-    ${renderMoveGrid({type:'gogyou',attr:'木',promoted:true}, {cells:[[-1,0],[1,0],[0,-1],[0,1]]})}
-    <p>術=縦横に1マスずつ進む多段移動（最大3回、途中で曲がれる）。通った道に壁を設置します。<br>軌跡の壁は<b>常に最新の1本だけ</b>：青龍が次に動くと、前回の軌跡は消えて新しい道に置き換わります。</p>
-    <p style="font-size:0.78rem;opacity:0.85;">成り条件：春に「壁作成」を使う（任意で成れる）。</p>
-    <p style="color:var(--gold);margin-top:10px;"><b>朱雀</b>（火の成り）</p>
-    ${renderMoveGrid({type:'gogyou',attr:'火',promoted:true})}
-    <p>術=任意の壁へ飛翔し、その壁に炎の属性を与えます。壁の上にいる間は攻撃から守られます。</p>
-    <p style="font-size:0.78rem;opacity:0.85;">成り条件：夏に「炎溜め」を使う（任意で成れる）。</p>
-    <p style="color:var(--gold);margin-top:10px;"><b>麒麟</b>（土の成り）</p>
-    ${renderMoveGrid({type:'gogyou',attr:'土',promoted:true})}
-    <p>横1列は<b>障害物をすり抜けて</b>移動できます（間に駒や壁があっても、その先の空きマスへ移動・倒せる駒を捕獲。ターン消費なし）。前後は1マス。</p>
-    <p>術＝印をつけた味方1駒と位置を入れ替えます。土用には印を付け替えられます。印を付けた駒には常に「印」バッジが表示されます。</p>
-    <p style="font-size:0.78rem;opacity:0.85;">成り条件：土用に「潜伏」を使う（任意で成れる）。</p>
-    <p style="color:var(--gold);margin-top:10px;"><b>白虎</b>（金の成り）</p>
-    ${renderMoveGrid({type:'gogyou',attr:'金',promoted:true})}
-    <p>術=<b>矛爪</b>。前方2マス（縦）にいる敵の駒を、属性相性を無視して倒します（味方は巻き込みません）。</p>
-    <p style="font-size:0.78rem;opacity:0.85;">成り条件：秋に「金剛力」を使う（任意で成れる）。</p>
-    <p style="color:var(--gold);margin-top:10px;"><b>玄武</b>（水の成り）</p>
-    ${renderMoveGrid({type:'gogyou',attr:'水',promoted:true}, {cells:[[-1,-1],[-1,0],[-1,1],[0,-1],[0,1],[1,-1],[1,0],[1,1]]})}
-    <p>術＝<b>移動切替</b>で2モードを切り替えます（手番を消費しません）。<br>・<b>通常</b>＝全方向1マス。金・火・陰・陽・王（成り駒含む）なら隣接する敵を倒せます。<br>・<b>スライド</b>＝8方向へ一直線。敵は倒せませんが、ぶつかった敵を次の自分の番まで凍らせます（王は凍らせられません）。凍らせた敵は、次の番に通常モードで倒せます。</p>
-    <p style="font-size:0.78rem;opacity:0.85;">成り条件：冬に「渦」を使う（任意で成れる）。</p>
+  { id:4, title:'季節とボーナス', render: () => `
+    <p>季節は<b>2ターンごと</b>に移り変わり、20の節を巡って1年（40ターン）になります。</p>
+    ${(() => {
+      const C = { '木':'#7dc860', '火':'#e0603c', '土':'#d0a840', '金':'#d8d8e0', '水':'#5aa0d8' };
+      const cycle = [
+        {n:'春', a:'木', s:'1〜4'}, {n:'土用', a:'土', s:'1'},
+        {n:'夏', a:'火', s:'1〜4'}, {n:'土用', a:'土', s:'2'},
+        {n:'秋', a:'金', s:'1〜4'}, {n:'土用', a:'土', s:'3'},
+        {n:'冬', a:'水', s:'1〜4'}, {n:'土用', a:'土', s:'4'},
+      ];
+      let h = '<div style="display:flex;flex-wrap:wrap;gap:4px;justify-content:center;margin:10px 0;">';
+      cycle.forEach((c,i) => {
+        // 土用は1節だけなので細く描き、長さの違いを見た目で伝える
+        const narrow = (c.n === '土用');
+        h += `<div style="flex:0 0 auto;${narrow?'min-width:30px;padding:8px 3px;':'min-width:58px;padding:8px 6px;'}text-align:center;background:${C[c.a]}22;border:1px solid ${C[c.a]}88;border-radius:4px;">
+          <div style="font-size:${narrow?'0.7rem':'0.85rem'};color:${C[c.a]};">${narrow?'土<br>用':c.n}</div>
+          <div style="font-size:0.65rem;opacity:0.7;">${c.s}</div>
+          ${narrow?'':`<div style="font-size:0.7rem;color:${C[c.a]};margin-top:2px;">${c.a}</div>`}</div>`;
+        if (i < cycle.length-1) h += '<div style="align-self:center;opacity:0.4;font-size:0.7rem;">→</div>';
+      });
+      h += '<div style="align-self:center;opacity:0.4;font-size:0.7rem;">↻</div></div>';
+      return h;
+    })()}
+    <p style="font-size:0.78rem;opacity:0.8;text-align:center;">画面上部の帯に、今の季節と属性が表示されます。</p>
+    <p style="color:var(--gold);margin-top:12px;"><b>季節ボーナス</b></p>
+    <p>季節と同じ属性の五行駒は、移動後に<b>もう1マス動けます</b>（種駒は対象外）。</p>
+    ${renderMoveGrid({type:'gogyou', attr:'木'}, {cells:[[-1,-1],[-1,0],[-1,1],[0,-1],[0,1],[1,-1],[1,0],[1,1]]})}
+    <p style="font-size:0.78rem;opacity:0.8;text-align:center;">ボーナス移動の範囲（全方向1マス。駒の種類を問わず共通）</p>
+    <p>ただし<b>ボーナス移動では相手の駒を取れません</b>。空いているマスへ動くだけの、陣形を整える一歩です。壁や合体駒にも進めません。</p>
+    <p style="color:var(--gold);margin-top:12px;"><b>季節が関わるルール</b></p>
+    <p>・<b>成り</b>…五行駒は、対応する季節に自分の術を使うと五神駒に成れます。<br>
+    ・<b>合体駒</b>…素体と同じ季節には、効果の発動率が20%から50%に上がります。</p>
   `},
-  { id:5, title:'種駒', render: () => `
-    <p>歩のように前方へ1マス進みます（開始時から盤にある種は初手のみ2マスも可。<b>持ち駒から打った種は1マスずつ</b>）。属性を持ちますが術はありません。</p>
-    ${renderMoveGrid({type:'tane',attr:'木'})}
-    <p>敵陣に入ると同じ属性の五行駒に成ります。</p>
-    <p style="color:var(--gold);margin-top:10px;"><b>種駒を重ねて五行駒に</b></p>
-    <p>持ち駒の種駒は、盤上にある<b>同じ属性・自分の種駒に重ねて打つ</b>と、合体してその属性の五行駒になります（成りを待たずに五行駒を作れます）。</p>
-    <p style="color:var(--gold);margin-top:10px;"><b>相打ち</b></p>
-    <p>前方にいる「相性で勝てない相手の種駒」には、相打ち（両方を破壊）を仕掛けられます。相手のマスをタップすると確認が出ます。一方的に攻め込まれた時の防御手段です（どちらの駒も持ち駒にはなりません）。</p>
-  `},
-  { id:6, title:'合体駒（結界）', render: () => `
-    <p>相生関係の2駒（盤上の素体＋持ち駒の素材）を合体させ、2×2を占有する強力な駒を作ります。</p>
-    <p>動けませんが盤面全体に作用。対応季節は確率30%に上昇。40ターン（1年）で自然消滅し、同時に1つ・作成から40ターンは次を作れません。素体と同じ弱点を持ち、相性有利な駒で破壊できます（玄極・太極はどの駒でも破壊可）。</p>
-    <p><b>樹海</b>（木+水）：20%で相手のターンをスキップ。<br>
-    <b>大火</b>（火+木）：20%で<b>隣接する敵駒</b>を1つ焼く（敵陣に切り込んで使う）。<br>
-    <b>焚沃</b>（土+火）：20%で種駒を生む。<br>
-    <b>鉱山</b>（金+土）：20%で相性無視攻撃。<br>
-    <b>水晶</b>（水+金）：20%で相手の駒を操作（<b>王も操作可能</b>）。<br>
-    <b>玄極</b>（陰+陽）：相手の成りを封じ、8ターンごと（4季節ごと）に相手の駒を1つ「無」にする。<br>
-    <b>太極</b>（陽+陰）：8ターンごと（4季節ごと）に味方を1つ成らせる。</p>
-  `},
-  { id:7, title:'季節とボーナス', render: () => `
-    <p>春→土用→夏→土用→秋→土用→冬→土用…と2ターンごとに季節が移ります。</p>
-    <p>季節の属性（春=木、夏=火、秋=金、冬=水、土用=土）と同じ五行駒は、移動後にもう1マス動ける「ボーナスアクション」を得ます（種駒は対象外）。</p>
-  `},
-  { id:8, title:'術のルール', render: () => `
+  { id:5, title:'術のルール', render: () => `
     <p>五行駒・五神駒を選び「術」ボタンから発動します。</p>
     <p>・自陣（自分側3列）では術を使えません。<br>
     ・ボーナスアクション中は術を使えません（移動のみ）。<br>
     ・術での破壊では相手を持ち駒にできません。</p>
     <p style="font-size:0.8rem;opacity:0.9;">術・結界が駒に効くと、そのマスが一瞬光り目印が出ます：<span style="color:rgba(230,90,70,1)">滅／焼=破壊</span>・<span style="color:rgba(110,210,120,1)">芽=種駒誕生</span>・<span style="color:rgba(185,110,220,1)">無=無化</span>・<span style="color:rgba(255,210,110,1)">成=成り付与</span>・<span style="color:rgba(110,170,245,1)">操=水晶で操作</span>。氷結は駒に❄が付きます。</p>
   `},
-  { id:9, title:'持ち駒スロット（消耗制）と禁じ手', render: () => `
-    <p>通常移動で相手を倒すと「奪う」か選べます。奪った駒は<b>敵陣を含む</b>空きマスに打てます（本将棋と同じ）。ただし<b>打った直後に動けなくなる位置には打てません</b>（種駒を最奥に打つなど）。成り駒は成る前に戻ります。</p>
-    <p><b>持ち駒スロットは各プレイヤー全10枠。消耗制です。</b><br>
-    ・駒を奪う／捕獲すると、空き枠が1つ埋まります。<br>
-    ・持ち駒を「打つ」または「合体素材」に使うと、<b>その枠は永久に潰れます</b>（二度と使えません）。<br>
-    ・潰れた枠は持ち駒欄で暗い「×」で表示されます。空き枠は点線で表示。<br>
-    ・つまり1ゲームで奪える・使える駒は合計10枠が上限です。</p>
-    <p><b>禁じ手</b><br>
-    ・<b>二歩</b>：同じ列に種駒を2枚打てません。<br>
+  { id:6, title:'持ち駒と禁じ手', render: () => `
+    <p>通常移動で相手を倒すと「奪う」か選べます。奪った駒は<b>自分の駒として打ち直せます</b>（成り駒は成る前に戻ります）。</p>
+    <p>打てるのは<b>敵陣を含む空きマス</b>です。ただし<b>打った直後に動けなくなる位置</b>には打てません（種駒を最奥に打つなど）。</p>
+    <p><b>種駒・陰・陽を敵陣に打つと、その場で成った状態で登場します</b>（種→五行駒、陰→暗黒竜、陽→耀白龍）。同じ暗黒竜・耀白龍が既に盤上にいる場合は、成らずに打たれます。</p>
+    <p style="color:var(--gold);margin-top:10px;"><b>禁じ手</b></p>
+    <p>・<b>二歩</b>：同じ列に自分の種駒を2枚打てません。<br>
     ・<b>打ち歩詰め</b>：種駒を打って相手の王を即詰みにする手は反則です。</p>
+    <p style="font-size:0.78rem;opacity:0.85;">※「無駒」は打てません（動かせないため、持ち駒欄では暗く表示されます）。</p>
   `},
-  { id:10, title:'属性相性（五行）', render: () => `
-    <p>五行駒・種駒は相性が合う相手しか倒せません。下はどちらも<b>「矢印の先の駒」を倒せる</b>向きです（画面隅の相性図と同じ）。</p>
-    <p><span style="color:rgba(120,210,120,1)">相生（緑）</span>：火→木→水→金→土→火<br>
-    <span style="color:rgba(230,90,90,1)">相剋（赤）</span>：木→土→水→火→金→木</p>
-    <p>各駒は相生の先・相剋の先の2種類を倒せます。天・冥・陰・陽は相性を無視して戦えます。</p>
-  `},
-  { id:11, title:'無駒（玄極の力）', render: () => `
-    <p><b>玄極</b>（陰+陽の合体駒）は、盤上にある限り一定周期で相手の駒を1つ「無」に変える力を持ちます（王＝天・冥は対象外）。</p>
+  { id:7, title:'無駒（玄極の力）', render: () => `
+    <p><b>玄極</b>（陰+陽の合体駒）は、盤上にある限り一定周期で相手の駒を1つ<b>ひとつ前の姿へ戻します</b>（五神駒→五行駒→種駒→無。王＝天・冥は対象外）。</p>
     <p><b>無駒</b>は真っ黒な「無」の駒です。属性を持たず、<b>まったく動けません</b>。成りもしません。他の駒を倒すこともできません。</p>
     <p>無駒を倒せるのは<b>王（天・冥）と陰・陽だけ</b>です。五行駒・種駒・五神駒では倒せません。</p>
-    <p>無駒を倒すと持ち駒スロットを1枠占有しますが、<b>打つことはできません</b>（動かせないゴミとして枠に居座り続けます）。持ち駒欄では暗く表示され、選べません。</p>
+    <p>無駒を倒すと持ち駒に入りますが、<b>打つことはできません</b>。持ち駒欄では暗く表示され、選べません。</p>
   `},
 ];
 
 // 対局ログを集計してテキスト化
+// 陣営ごとの戦績テキスト（リザルト画面用）
+function buildTeamLogText(team) {
+  if (!gameLog || !gameLog.byTeam || !gameLog.byTeam[team]) return 'データがありません。';
+  const bt = gameLog.byTeam[team];
+  const label = team==='ten' ? '天' : '冥';
+  let t = `【${label}の戦績】\n`;
+  t += `　総移動：${bt.distance||0}マス（${bt.moves||0}手）\n`;
+  t += `　成り：${bt.promotes||0}回　打ち込み：${bt.drops||0}回\n`;
+  t += `　撃破：${bt.killCount||0}体　失った駒の重み：${bt.lostValue||0}\n`;
+  const kills = Object.entries(bt.kills||{}).sort((a,b)=>b[1]-a[1]);
+  t += `\n■ 撃破した駒\n`;
+  t += kills.length ? kills.map(([k,v])=>`  ${k}：${v}体`).join('\n')+'\n' : '  なし\n';
+  const js = Object.entries(bt.jutsu||{}).sort((a,b)=>b[1]-a[1]);
+  t += `\n■ 使った術\n`;
+  t += js.length ? js.map(([k,v])=>`  ${k}：${v}回`).join('\n')+'\n' : '  なし\n';
+  const fc = Object.entries(bt.fusionCreate||{});
+  const fe = bt.fusionEffect || {};
+  t += `\n■ 合体駒\n`;
+  t += fc.length ? fc.map(([k,v])=>`  ${k}：作成${v}回 / 効果${fe[k]||0}回`).join('\n')+'\n' : '  なし\n';
+  return t;
+}
+// 陣営ごとの性格診断ブロック（HTML）
+function buildPersonalityBlock(team, opts) {
+  const sc = analyzePersonality(gameLog, team);
+  if (!sc) return '';
+  const attr = topAttrOf(sc);
+  if (!attr || !PERSONALITY_DEFS[attr]) return '';
+  const d = PERSONALITY_DEFS[attr];
+  const colors = { '木':'#7ec87e', '火':'#e08050', '土':'#d0b060', '金':'#e8e8f0', '水':'#7ab0d8' };
+  const col = colors[attr] || 'var(--gold)';
+  const det = personalityDetail(gameLog, team) || {};
+  const detHtml = ['木','火','土','金','水'].map(k =>
+    `<span style="color:${colors[k]};">${k}</span> ${det[k]||''}`).join('　');
+  const label = team==='ten' ? '天' : '冥';
+  const rv = buildPersonalityReview(sc);
+  const headline = rv.second
+    ? `${d.name}　＋　${PERSONALITY_DEFS[rv.second].name}`
+    : `${d.name}　－　${d.short}`;
+  const titleHtml = rv.title
+    ? `<div style="margin-top:8px;padding:6px 8px;background:rgba(200,150,12,0.14);border-left:2px solid var(--gold);font-size:0.76rem;line-height:1.6;">
+         <b style="color:var(--gold);letter-spacing:0.1em;">［${rv.title.name}］</b> ${rv.title.text}</div>` : '';
+  const bodyHtml = rv.lines.map(t => `<div style="font-size:0.78rem;line-height:1.6;margin-top:6px;">${t}</div>`).join('');
+  const weakHtml = rv.weak
+    ? `<div style="font-size:0.75rem;line-height:1.6;margin-top:6px;opacity:0.85;">▸ ${rv.weak}</div>` : '';
+  return `<div style="margin:10px 0;padding:12px;background:rgba(0,0,0,0.3);border:1px solid ${col}55;border-radius:4px;">
+    <div style="font-size:0.72rem;opacity:0.75;letter-spacing:0.1em;">${label}の気質</div>
+    <div style="font-size:1.02rem;color:${col};letter-spacing:0.12em;margin:4px 0 6px;">${headline}</div>
+    ${buildRadarChart(sc, (opts&&opts.size)||180)}
+    <div style="font-size:0.7rem;line-height:1.7;text-align:center;opacity:0.9;">${detHtml}</div>
+    ${bodyHtml}
+    ${titleHtml}
+    <div style="font-size:0.75rem;line-height:1.6;margin-top:6px;opacity:0.85;">▸ ${rv.advice}</div>
+    ${weakHtml}
+  </div>`;
+}
 function buildGameLogText() {
   if (!gameLog) return '対局データがありません。';
   const g = gameLog;
@@ -3184,11 +3967,68 @@ function showGameLog(auto=false) {
   const box = document.createElement('div');
   box.style.cssText = 'background:#1a1008;border:1px solid rgba(200,150,12,0.5);border-radius:8px;max-width:520px;width:100%;color:#f0e6c8;font-family:inherit;padding:20px;';
   const logText = buildGameLogText();
+  // 五行の性格診断（人間側＝天。AI同士の観戦時は出さない）
+  let personalityHtml = '';
+  try {
+    if (gameLog && !gameLog.isAI) {
+      const sc = analyzePersonality(gameLog, 'ten');
+      const acc = auto ? savePersonalityRecord(sc) : loadPersonalityRecord();
+      const thisAttr = topAttrOf(sc);
+      const totalAttr = acc ? topAttrOf(acc.score) : null;
+      if (thisAttr && PERSONALITY_DEFS[thisAttr]) {
+        const d = PERSONALITY_DEFS[thisAttr];
+        const colors = { '木':'#7ec87e', '火':'#e08050', '土':'#d0b060', '金':'#d8d8e0', '水':'#7ab0d8' };
+        const col = colors[thisAttr] || 'var(--gold)';
+        // 総合（複数局の蓄積）
+        let accHtml = '';
+        if (acc && acc.games >= 2 && totalAttr) {
+          const td = PERSONALITY_DEFS[totalAttr];
+          // 総合は各局の平均でレーダーを描く
+          const avg = {}; for (const k2 of ['木','火','土','金','水']) avg[k2] = Math.round((acc.score[k2]||0) / acc.games);
+          accHtml = `<div style="margin-top:10px;padding-top:10px;border-top:1px solid rgba(200,150,12,0.25);">
+            <div style="font-size:0.72rem;opacity:0.75;letter-spacing:0.1em;">これまで${acc.games}局の総合</div>
+            <div style="font-size:0.95rem;color:${colors[totalAttr]||'inherit'};letter-spacing:0.1em;margin:2px 0 4px;">${td.name}　－　${td.short}</div>
+            ${buildRadarChart(avg, 150)}</div>`;
+        }
+        // 内訳（数値）
+        const det = personalityDetail(gameLog, 'ten') || {};
+        const detHtml = ['木','火','土','金','水'].map(k2 =>
+          `<span style="color:${colors[k2]};">${k2}</span> ${det[k2]||''}`).join('　');
+        const rv = buildPersonalityReview(sc);
+        const headline = rv.second ? `${d.name}　＋　${PERSONALITY_DEFS[rv.second].name}` : `${d.name}　－　${d.short}`;
+        const titleHtml = rv.title
+          ? `<div style="margin-top:8px;padding:6px 8px;background:rgba(200,150,12,0.14);border-left:2px solid var(--gold);font-size:0.76rem;line-height:1.6;">
+               <b style="color:var(--gold);letter-spacing:0.1em;">［${rv.title.name}］</b> ${rv.title.text}</div>` : '';
+        const bodyHtml = rv.lines.map(t => `<div style="font-size:0.78rem;line-height:1.6;margin-top:6px;">${t}</div>`).join('');
+        const weakHtml = rv.weak ? `<div style="font-size:0.75rem;line-height:1.6;margin-top:6px;opacity:0.85;">▸ ${rv.weak}</div>` : '';
+        personalityHtml = `<div style="margin:12px 0;padding:12px;background:rgba(0,0,0,0.3);border:1px solid ${col}55;border-radius:4px;">
+          <div style="font-size:0.72rem;opacity:0.75;letter-spacing:0.1em;">この一局の気質</div>
+          <div style="font-size:1.05rem;color:${col};letter-spacing:0.12em;margin:4px 0 6px;">${headline}</div>
+          ${buildRadarChart(sc)}
+          <div style="font-size:0.7rem;line-height:1.7;text-align:center;opacity:0.9;">${detHtml}</div>
+          ${bodyHtml}
+          ${titleHtml}
+          <div style="font-size:0.75rem;line-height:1.6;margin-top:6px;opacity:0.85;">▸ ${rv.advice}</div>
+          ${weakHtml}
+          ${accHtml}
+        </div>`;
+      }
+    }
+  } catch(e) { personalityHtml = ''; }
   const headerMsg = auto && gameLog && gameLog.winner
     ? `<div style="text-align:center;font-size:1.2rem;color:var(--gold);letter-spacing:0.15em;margin-bottom:12px;">${gameLog.winner==='ten'?'天':'冥'}の勝利！</div>`
     : `<div style="text-align:center;font-size:1.05rem;color:var(--gold);letter-spacing:0.15em;margin-bottom:12px;">対局ログ</div>`;
-  box.innerHTML = headerMsg +
-    `<pre style="white-space:pre-wrap;font-family:inherit;font-size:0.78rem;line-height:1.55;background:rgba(0,0,0,0.3);padding:12px;border-radius:4px;border:1px solid rgba(200,150,12,0.2);max-height:50vh;overflow-y:auto;">${logText.replace(/</g,'&lt;')}</pre>
+  // 陣営別タブ（全体／天／冥）。それぞれの戦績と気質を見比べられるようにする。
+  const _tabBtn = (id,label,active) => `<button class="gl-tab" data-tab="${id}" style="flex:1;padding:7px 4px;font-family:inherit;font-size:0.82rem;border-radius:4px;cursor:pointer;border:1px solid ${active?'var(--gold)':'rgba(200,150,12,0.3)'};background:${active?'rgba(200,150,12,0.25)':'rgba(0,0,0,0.25)'};color:${active?'#f0e6c8':'rgba(230,215,180,0.7)'};">${label}</button>`;
+  const _tabsHtml = `<div style="display:flex;gap:6px;margin:10px 0 8px;">${_tabBtn('all','全体',true)}${_tabBtn('ten','天',false)}${_tabBtn('mei','冥',false)}</div>`;
+  const _paneStyle = 'white-space:pre-wrap;font-family:inherit;font-size:0.78rem;line-height:1.55;background:rgba(0,0,0,0.3);padding:12px;border-radius:4px;border:1px solid rgba(200,150,12,0.2);max-height:46vh;overflow-y:auto;';
+  let _tenBlock='', _meiBlock='';
+  try { _tenBlock = buildPersonalityBlock('ten') + `<pre style="${_paneStyle}">${buildTeamLogText('ten').replace(/</g,'&lt;')}</pre>`; } catch(e) { _tenBlock='<p>データがありません</p>'; }
+  try { _meiBlock = buildPersonalityBlock('mei') + `<pre style="${_paneStyle}">${buildTeamLogText('mei').replace(/</g,'&lt;')}</pre>`; } catch(e) { _meiBlock='<p>データがありません</p>'; }
+  box.innerHTML = headerMsg + _tabsHtml +
+    `<div id="gl-pane-all">${personalityHtml}<pre style="${_paneStyle}">${logText.replace(/</g,'&lt;')}</pre></div>
+     <div id="gl-pane-ten" style="display:none;">${_tenBlock}</div>
+     <div id="gl-pane-mei" style="display:none;">${_meiBlock}</div>
     <div style="display:flex;gap:8px;margin-top:14px;">
       <button id="gamelog-copy" style="flex:1;padding:9px;background:rgba(50,120,150,0.3);border:1px solid rgba(100,180,220,0.6);color:#e8f0f8;font-family:inherit;font-size:0.85rem;border-radius:4px;cursor:pointer;">📋 コピー</button>
       <button id="gamelog-close" style="flex:1;padding:9px;background:rgba(200,150,12,0.25);border:1px solid var(--gold);color:#f0e6c8;font-family:inherit;font-size:0.85rem;border-radius:4px;cursor:pointer;">閉じる</button>
@@ -3206,6 +4046,22 @@ function showGameLog(auto=false) {
   overlay.appendChild(box);
   overlay.onclick = (e) => { if (e.target===overlay) overlay.remove(); };
   document.body.appendChild(overlay);
+  // タブ切り替え（全体／天／冥）
+  box.querySelectorAll('.gl-tab').forEach(btn => {
+    btn.onclick = () => {
+      const id = btn.getAttribute('data-tab');
+      ['all','ten','mei'].forEach(k => {
+        const pane = document.getElementById('gl-pane-'+k);
+        if (pane) pane.style.display = (k===id) ? '' : 'none';
+      });
+      box.querySelectorAll('.gl-tab').forEach(b2 => {
+        const on = b2.getAttribute('data-tab')===id;
+        b2.style.border = '1px solid ' + (on ? 'var(--gold)' : 'rgba(200,150,12,0.3)');
+        b2.style.background = on ? 'rgba(200,150,12,0.25)' : 'rgba(0,0,0,0.25)';
+        b2.style.color = on ? '#f0e6c8' : 'rgba(230,215,180,0.7)';
+      });
+    };
+  });
   document.getElementById('gamelog-close').onclick = () => overlay.remove();
   // オンライン対戦の終局時：再戦・メニューボタンを表示
   if (onlineMode) {
@@ -3448,7 +4304,6 @@ function _pzClearBoard(){
   aiRecentMoves={ten:[],mei:[]}; // AIの着手履歴（いたちごっこ抑制）もリセット
   lastJutsuPiece=null;
   capturedPieces={ten:[],mei:[]}; capturedPlacedCount={ten:0,mei:0};
-  if(typeof suzakuOnWall!=='undefined') suzakuOnWall=null;
 }
 function getSolvedPuzzles(){ try{ return JSON.parse(localStorage.getItem('ogx_puzzle_solved')||'[]'); }catch(e){ return []; } }
 function markPuzzleSolved(title){ try{ var s=getSolvedPuzzles(); if(s.indexOf(title)<0){ s.push(title); localStorage.setItem('ogx_puzzle_solved', JSON.stringify(s)); } }catch(e){} }
@@ -3572,7 +4427,7 @@ const PRACTICE_STAGES = [
     desc:'木を選んで「術（壁作成）」を使うと、盤上に壁を作れます（1体につき最大3個）。壁は駒の進行をさえぎります。',
     pieces:[ [4,4,'gogyou','ten','木'], [3,4,'gogyou','mei','土'], [4,6,'gogyou','mei','水'] ] },
   { title:'火の術：炎溜めと暴発', season:0,
-    desc:'火を選んで「術（炎溜め）」を使うと炎を溜め、6ターンの時限が始まります。0になると強制「大暴発」で周囲を相性無視・敵味方問わず吹き飛ばします。待たずに「即起爆」すれば相性で倒せる敵だけを狙え、味方は巻き込みません。どちらも火駒自身は消滅します。',
+    desc:'火を選んで「術（炎溜め）」を使うと炎を溜め、6ターンの時限が始まります。0になると強制「大暴発」で周囲を相性無視・敵味方問わず吹き飛ばします。動かせば炎を消費して跳べえ、味方は巻き込みません。どちらも火駒自身は消滅します。',
     pieces:[ [4,4,'gogyou','ten','火'], [2,3,'gogyou','mei','木'], [2,5,'gogyou','mei','金'], [6,3,'gogyou','mei','金'] ] },
   { title:'土の術：潜伏', season:0,
     desc:'土を選んで「術（潜伏）」を使うと、土が地中に潜みます。次の自分のターン開始時にポップアップが出て、出現場所を選んで現れます。このとき、間にある他の駒を無視して遠くのマスを選んだり、倒せる駒があれば直接そこに出現して倒せます。',
@@ -3585,10 +4440,10 @@ const PRACTICE_STAGES = [
     pieces:[ [4,4,'gogyou','ten','水'], [3,6,'gogyou','mei','金'], [2,3,'gogyou','mei','火'] ] },
   // ―― 五神駒（成った五行：木＝青龍・火＝朱雀・土＝麒麟・金＝白虎・水＝玄武）――
   { title:'青龍（木）：方向転換', season:0,
-    desc:'青龍（木の五神）は、たて・よこに進む多段移動（最大3回）で、途中で曲がれるのが強みです。まっすぐだけでなく、向きを変えて駒を狙ってみましょう。通った道には壁ができます。',
+    desc:'青龍（木の五神）は、たて・よこに合計2マス進み、途中で1回だけ曲がれます。まっすぐだけでなく、向きを変えて駒を狙ってみましょう。通った道には壁ができます。',
     pieces:[ [4,4,'gogyou','ten','木',true], [2,4,'gogyou','mei','土'], [2,6,'gogyou','mei','水'] ] },
   { title:'朱雀（火）：飛翔', season:0,
-    desc:'朱雀（火の五神）は「術（飛翔）」で、盤上の壁へ飛び移れます。壁の上にいる間は攻撃から守られます。飛翔先の壁をタップしましょう。',
+    desc:'朱雀（火の五神）は「術（飛翔）」で、盤上の壁へ飛び移れます。飛び移った壁は炎で焼き払われます。飛翔先の壁をタップしましょう。',
     pieces:[ [4,4,'gogyou','ten','火',true], [2,6,'gogyou','mei','木'] ],
     walls:[ [2,4,'ten'] ] },
   { title:'麒麟（土）：すり抜け・入替', season:0, kirinIntro:true,
@@ -3803,27 +4658,375 @@ function showManual() {
 }
 
 // 目次を表示
+// 五行駒に共通する概念をまとめたページ（各属性ページから重複を排除するための土台）
+function renderManualGogyouCommon() {
+  const box = document.getElementById('manual-box');
+  if (!box) return;
+  const C = MANUAL_ATTR_COLOR;
+  let html = `<div style="font-size:1.05rem;color:var(--gold);letter-spacing:0.12em;margin-bottom:2px;">相性（五行）</div>
+    <div style="font-size:0.75rem;opacity:0.75;margin-bottom:6px;">どの駒がどの駒を倒せるか・成りの仕組み</div>`;
+  // 駒の分類（属性の有無と成り方）
+  html += `<div style="margin:4px 0 10px;padding:10px;background:rgba(0,0,0,0.25);border:1px solid rgba(200,150,12,0.2);border-radius:4px;">
+    <div style="font-size:0.72rem;opacity:0.7;margin-bottom:6px;">駒の分け方</div>
+    <table style="width:100%;border-collapse:collapse;font-size:0.72rem;line-height:1.5;">
+      <tr>
+        <td style="width:33%;padding:4px;border:1px solid rgba(200,150,12,0.15);opacity:0.7;"></td>
+        <td style="padding:4px;border:1px solid rgba(200,150,12,0.15);text-align:center;color:var(--gold);">属性あり<br><span style="opacity:0.6;font-size:0.66rem;">相性で戦う</span></td>
+        <td style="padding:4px;border:1px solid rgba(200,150,12,0.15);text-align:center;color:var(--gold);">属性なし<br><span style="opacity:0.6;font-size:0.66rem;">相性を無視</span></td>
+      </tr>
+      <tr>
+        <td style="padding:4px;border:1px solid rgba(200,150,12,0.15);color:var(--gold);">術で成る</td>
+        <td style="padding:4px;border:1px solid rgba(200,150,12,0.15);text-align:center;">五行駒<br><span style="opacity:0.6;font-size:0.66rem;">→ 五神駒</span></td>
+        <td style="padding:4px;border:1px solid rgba(200,150,12,0.15);text-align:center;opacity:0.35;">—</td>
+      </tr>
+      <tr>
+        <td style="padding:4px;border:1px solid rgba(200,150,12,0.15);color:var(--gold);">敵陣で成る</td>
+        <td style="padding:4px;border:1px solid rgba(200,150,12,0.15);text-align:center;">種駒<br><span style="opacity:0.6;font-size:0.66rem;">→ 五行駒</span></td>
+        <td style="padding:4px;border:1px solid rgba(200,150,12,0.15);text-align:center;">陰・陽<br><span style="opacity:0.6;font-size:0.66rem;">→ 暗黒竜・耀白龍</span></td>
+      </tr>
+      <tr>
+        <td style="padding:4px;border:1px solid rgba(200,150,12,0.15);color:var(--gold);">成らない</td>
+        <td style="padding:4px;border:1px solid rgba(200,150,12,0.15);text-align:center;opacity:0.35;">—</td>
+        <td style="padding:4px;border:1px solid rgba(200,150,12,0.15);text-align:center;">天・冥（王）</td>
+      </tr>
+    </table></div>`;
+
+  // 相性
+  html += mSec('相性（どの駒を倒せるか）');
+  html += mText('縦が攻める側、横が守る側です。○のところだけ倒せます。');
+  {
+    const A = ['木','火','土','金','水'];
+    const SOU = { '火':'木', '木':'水', '水':'金', '金':'土', '土':'火' }; // 相生
+    const KOK = { '木':'土', '土':'水', '水':'火', '火':'金', '金':'木' }; // 相剋
+    const cell = 'padding:5px 0;text-align:center;border:1px solid rgba(200,150,12,0.2);';
+    let t = `<table style="width:100%;border-collapse:collapse;font-size:0.8rem;margin:6px 0;">
+      <tr><td style="${cell}background:rgba(0,0,0,0.3);font-size:0.65rem;opacity:0.7;">攻↓ 守→</td>`;
+    A.forEach(d => { t += `<td style="${cell}color:${C[d]};background:rgba(0,0,0,0.2);">${d}</td>`; });
+    t += `</tr>`;
+    A.forEach(atk => {
+      t += `<tr><td style="${cell}color:${C[atk]};background:rgba(0,0,0,0.2);">${atk}</td>`;
+      A.forEach(def => {
+        const ok = (SOU[atk]===def) || (KOK[atk]===def);
+        t += `<td style="${cell}${ok?'color:var(--gold);font-weight:bold;background:rgba(200,150,12,0.12);':'opacity:0.25;'}">${ok?'○':'−'}</td>`;
+      });
+      t += `</tr>`;
+    });
+    t += `</table>`;
+    html += t;
+  }
+  html += mNote('○になる関係は2種類あります。相生（木→火→土→金→水→木の順に生み出す関係）と、相剋（木→土→水→火→金→木の順に打ち勝つ関係）です。');
+  html += mNote('種駒にも属性があり、相性は五行駒とまったく同じです。陰・陽と王は無属性で、相性を無視してどの駒でも倒せます。');
+  // 成り
+  html += mSec('成り（五神駒になる）');
+  html += mText(`五行駒は、${mKey('対応する季節にその駒の術を使う')}と五神駒に成れます（成るかは任意）。`);
+  html += `<div style="font-size:0.8rem;line-height:1.9;margin:6px 0;padding:8px 10px;background:rgba(0,0,0,0.25);border-radius:4px;">
+      <span style="color:${C['木']}">木</span>（春）→ 青龍　／　<span style="color:${C['火']}">火</span>（夏）→ 朱雀　／　<span style="color:${C['土']}">土</span>（土用）→ 麒麟<br>
+      <span style="color:${C['金']}">金</span>（秋）→ 白虎　／　<span style="color:${C['水']}">水</span>（冬）→ 玄武
+    </div>`;
+  html += mText(`同じ種類の五神駒は、${mKey('1人につき盤上に1枚まで')}です。その駒が倒されると、また成れるようになります。`);
+  html += `<div style="display:flex;gap:8px;margin-top:18px;">
+      <button onclick="renderManualIndex()" style="flex:1;padding:8px;background:rgba(200,150,12,0.18);border:1px solid rgba(200,150,12,0.5);color:#f0e6c8;font-family:inherit;font-size:0.85rem;border-radius:4px;cursor:pointer;">← 目次へ</button>
+      <button onclick="document.getElementById('manual-modal').remove()" style="flex:1;padding:8px;background:rgba(200,150,12,0.25);border:1px solid var(--gold);color:#f0e6c8;font-family:inherit;font-size:0.85rem;border-radius:4px;cursor:pointer;">閉じる</button>
+    </div>`;
+  box.innerHTML = html;
+  box.scrollTop = 0;
+}
+
+// 属性ページを描画する（木・火・土・金・水で共通のレイアウト）
+function renderManualAttr(attr, mode) {
+  const box = document.getElementById('manual-box');
+  const d = MANUAL_ATTRS[attr];
+  if (!box || !d) return;
+  const col = MANUAL_ATTR_COLOR[attr] || 'var(--gold)';
+  const isProm = (mode === 'promoted');
+  const tab = (label, m, on) => `<button onclick="renderManualAttr('${attr}','${m}')" style="flex:1;padding:8px 4px;font-family:inherit;font-size:0.85rem;border-radius:4px;cursor:pointer;border:1px solid ${on?col:'rgba(200,150,12,0.3)'};background:${on?col+'33':'rgba(0,0,0,0.25)'};color:${on?'#f0e6c8':'rgba(230,215,180,0.7)'};">${label}</button>`;
+  let html = `<div style="display:flex;align-items:center;gap:10px;margin-bottom:6px;">
+      <div style="font-size:1.6rem;color:${col};">${attr}</div>
+      <div><div style="font-size:1.0rem;color:${col};letter-spacing:0.1em;">${d.title}の駒</div>
+      <div style="font-size:0.75rem;opacity:0.75;">${d.catch}</div></div>
+    </div>
+    <div style="display:flex;gap:6px;margin-bottom:10px;">${tab('通常','normal',!isProm)}${tab(d.goshin.name,'promoted',isProm)}</div>`;
+  if (!isProm) {
+    html += mSec('見た目', col);
+    html += mPieceShowcase([
+      { spec:{type:'gogyou', attr:attr, team:'ten'}, label:'天（自分）' },
+      { spec:{type:'gogyou', attr:attr, team:'mei'}, label:'冥（相手）' },
+    ], 54);
+    html += mSec('動き', col);
+    html += renderMoveGrid({type:'gogyou', attr:attr});
+    html += mText(d.move);
+    html += mSec(`術「${d.jutsu.name}」`, col);
+    html += mText(d.jutsu.text);
+    if (d.jutsuList) html += mList(d.jutsuList);
+    if (d.jutsuNote) html += mNote(d.jutsuNote);
+    html += mSec('成り方', col);
+    html += mText(d.promote);
+  } else {
+    html += mSec('見た目', col);
+    html += mPieceShowcase([
+      { spec:{type:'gogyou', attr:attr, promoted:true, team:'ten'}, label:'天（自分）' },
+      { spec:{type:'gogyou', attr:attr, promoted:true, team:'mei'}, label:'冥（相手）' },
+    ], 54);
+    html += mSec('動き', col);
+    html += renderMoveGrid({type:'gogyou', attr:attr, promoted:true});
+    html += mText(d.goshin.move);
+    html += mSec('術', col);
+    html += mText(d.goshin.jutsu);
+    html += mNote('同じ五神駒は1人につき盤上に1枚までです。倒されると、また成れるようになります。');
+  }
+  html += `<div style="margin-top:10px;"><button onclick="renderManualGogyouCommon()" style="width:100%;padding:8px;background:rgba(0,0,0,0.25);border:1px dashed rgba(200,150,12,0.5);color:rgba(240,230,200,0.9);font-family:inherit;font-size:0.8rem;border-radius:4px;cursor:pointer;">相性と成りの仕組みを見る →</button></div>`;
+  html += `<div style="display:flex;gap:8px;margin-top:14px;">
+      <button onclick="renderManualGogyouSelect()" style="flex:1;padding:8px;background:rgba(200,150,12,0.18);border:1px solid rgba(200,150,12,0.5);color:#f0e6c8;font-family:inherit;font-size:0.85rem;border-radius:4px;cursor:pointer;">← 五行駒へ</button>
+      <button onclick="renderManualIndex()" style="flex:1;padding:8px;background:rgba(200,150,12,0.18);border:1px solid rgba(200,150,12,0.5);color:#f0e6c8;font-family:inherit;font-size:0.85rem;border-radius:4px;cursor:pointer;">目次へ</button>
+    </div>`;
+  box.innerHTML = html;
+  box.scrollTop = 0;
+}
+
 function renderManualIndex() {
   const box = document.getElementById('manual-box');
   if (!box) return;
+  const C = MANUAL_ATTR_COLOR;
+  // 見出し（「駒の説明」「システムの説明」の2本立て）
+  const sect = (t) => `<div style="margin:16px 0 8px;font-size:0.8rem;color:var(--gold);letter-spacing:0.14em;border-bottom:1px solid rgba(200,150,12,0.3);padding-bottom:4px;">${t}</div>`;
+  // 通常の項目ボタン
+  // 背景に情景を敷いたボタン（文字は左揃えのまま読みやすさを保つ）
+  const item = (label, onclick, sub, scene) => `<button onclick="${onclick}" style="position:relative;overflow:hidden;width:100%;min-height:62px;text-align:left;padding:14px 16px;background:rgba(0,0,0,0.25);border:1px solid rgba(200,150,12,0.35);border-radius:6px;color:#f0e6c8;font-family:inherit;font-size:0.95rem;cursor:pointer;">
+      ${scene ? mScene(scene) : ''}
+      <span style="position:absolute;inset:0;background:linear-gradient(90deg, rgba(12,9,6,0.9) 0%, rgba(12,9,6,0.76) 45%, rgba(12,9,6,0.4) 76%, rgba(12,9,6,0.22) 100%);"></span>
+      <span style="position:relative;display:block;text-shadow:0 1px 3px rgba(0,0,0,0.9);">${label}${sub?`<span style="display:block;font-size:0.74rem;opacity:0.75;margin-top:4px;">${sub}</span>`:''}</span></button>`;
+
   let html = `<h2 style="color:var(--gold);text-align:center;letter-spacing:0.15em;margin-bottom:4px;">陰陽五行将棋</h2>
-    <p style="text-align:center;font-size:0.8rem;opacity:0.7;margin-bottom:8px;">遊び方・ルール説明</p>
-    <p style="font-size:0.85rem;background:rgba(200,150,12,0.1);padding:8px 10px;border-radius:4px;margin-bottom:14px;">
-    <b style="color:var(--gold);">勝利条件</b>：相手の「天（金）」または「冥（銀）」を倒せば勝ちです。</p>
-    <p style="font-size:0.8rem;opacity:0.7;margin-bottom:8px;">項目をタップすると詳しい説明が開きます。</p>
-    <div style="display:flex;flex-direction:column;gap:6px;">`;
-  MANUAL_GROUPS.forEach(g => {
-    html += `<button onclick="renderManualDetail(${g.id})" style="text-align:left;padding:10px 14px;background:rgba(200,150,12,0.12);border:1px solid rgba(200,150,12,0.3);border-radius:4px;color:#f0e6c8;font-family:inherit;font-size:0.9rem;cursor:pointer;">
-      <span style="color:var(--gold);font-weight:bold;">${g.id}.</span> ${g.title}</button>`;
-  });
-  html += `</div>
-    <div style="text-align:center;margin-top:18px;">
+    <p style="text-align:center;font-size:0.8rem;opacity:0.7;margin-bottom:10px;">遊び方・ルール説明</p>
+    <p style="font-size:0.85rem;background:rgba(200,150,12,0.1);padding:8px 10px;border-radius:4px;">
+    <b style="color:var(--gold);">勝利条件</b>：相手の「天（金）」または「冥（銀）」を倒せば勝ちです。</p>`;
+
+  // ===== 駒の説明 =====
+  html += sect('駒の説明');
+  html += `<div style="display:flex;flex-direction:column;gap:6px;">`;
+  html += item('天 / 冥（王）', "renderManualDetail(1)", '最重要の駒。倒されると負け', 'king');
+  html += item('陰 / 陽', "renderManualInYou('normal')", '角と飛車の動き。相性を無視して戦う', 'inyou');
+  html += item('五行駒（木・火・土・金・水）', "renderManualGogyouSelect()", '5つの属性。それぞれ動き・術・成り駒が異なる', 'gogyou');
+  html += item('種駒（木・火・土・金・水）', "renderManualSeed()", '5つの属性を持つ。敵陣で五行駒に成長', 'seed');
+  html += item('合体駒（樹海・大火・焚沃・鉱山・水晶・玄極・太極）', "renderManualFusionList()", '7種類。それぞれ盤全体に効く力を持つ', 'fusion');
+  html += `</div>`;
+
+  // ===== システムの説明 =====
+  html += sect('システムの説明');
+  html += `<div style="display:flex;flex-direction:column;gap:6px;">`;
+  html += item('相性（五行）', "renderManualGogyouCommon()", 'どの駒がどの駒を倒せるか・成り', 'aisho');
+  html += item('合体の仕組み', "renderManualDetail(3)", '作り方・巻き込んだ駒・持続と破壊', 'fusion');
+  html += item('季節とボーナス', "renderManualDetail(4)", '2ターンごとに移り変わる。術と成りの鍵', 'season');
+  html += item('自陣と敵陣', "renderManualZone()", '盤の上下3列。術・成り・打ち込みの条件になる', 'zone');
+  html += `</div>`;
+
+  // ===== そのほか =====
+  html += sect('そのほか');
+  html += `<div style="display:flex;flex-direction:column;gap:6px;">`;
+  html += item('術のルール', "renderManualDetail(5)", '発動の条件と共通ルール');
+  html += item('持ち駒と禁じ手', "renderManualDetail(6)", '奪った駒の打ち直し・二歩・打ち歩詰め');
+  html += item('無駒（玄極の力）', "renderManualDetail(7)", '動けず戦えない駒');
+  html += `</div>`;
+
+  html += `<div style="text-align:center;margin-top:18px;">
       <button onclick="document.getElementById('manual-modal').remove()" style="padding:8px 24px;background:rgba(200,150,12,0.25);border:1px solid var(--gold);color:#f0e6c8;font-family:inherit;font-size:0.9rem;border-radius:4px;cursor:pointer;">閉じる</button>
     </div>`;
   box.innerHTML = html;
   box.scrollTop = 0;
-  const modal = document.getElementById('manual-modal');
-  if (modal) modal.scrollTop = 0;
+}
+
+// 合体駒：一覧から1つずつ見るページ
+function renderManualFusionList() {
+  const box = document.getElementById('manual-box');
+  if (!box) return;
+  let html = `<div style="font-size:1.05rem;color:var(--gold);letter-spacing:0.12em;margin-bottom:2px;">合体駒（結界）</div>
+    <div style="font-size:0.75rem;opacity:0.75;margin-bottom:10px;">2つの駒を合わせて作る、盤全体に効く駒。効果を見たいものを選んでください</div>
+    <div style="display:flex;flex-direction:column;gap:6px;">`;
+  MANUAL_FUSIONS.forEach((f,i) => {
+    const parts = f.mat.split(' ＋ ');
+    const c1 = MANUAL_ATTR_COLOR[parts[0]] || '#b0a0c0';
+    const c2 = MANUAL_ATTR_COLOR[parts[1]] || '#b0a0c0';
+    html += `<button onclick="renderManualFusion(${i})" style="position:relative;overflow:hidden;width:100%;min-height:66px;text-align:left;padding:14px 16px;background:linear-gradient(100deg, ${c1}55 0%, ${c2}55 45%, rgba(0,0,0,0.3) 100%);border:1px solid ${f.color}88;border-radius:6px;color:#f0e6c8;font-family:inherit;font-size:0.95rem;cursor:pointer;">
+        <span style="position:absolute;right:6px;top:50%;transform:translateY(-50%);font-size:2.8rem;color:${f.color};opacity:0.35;font-weight:bold;pointer-events:none;line-height:1;">${f.name}</span>
+        <span style="position:relative;display:block;text-shadow:0 1px 3px rgba(0,0,0,0.9);"><span style="color:${f.color};font-size:1.05rem;">${f.name}</span>
+        <span style="display:block;font-size:0.74rem;opacity:0.8;margin-top:4px;">${f.mat}</span></span></button>`;
+  });
+  html += `</div>
+    <div style="margin-top:12px;"><button onclick="renderManualDetail(3)" style="width:100%;padding:8px;background:rgba(0,0,0,0.25);border:1px dashed rgba(200,150,12,0.5);color:rgba(240,230,200,0.9);font-family:inherit;font-size:0.8rem;border-radius:4px;cursor:pointer;">合体の仕組み（作り方・持続・破壊）を見る →</button></div>`;
+  html += `<div style="display:flex;gap:8px;margin-top:18px;">
+      <button onclick="renderManualIndex()" style="flex:1;padding:8px;background:rgba(200,150,12,0.18);border:1px solid rgba(200,150,12,0.5);color:#f0e6c8;font-family:inherit;font-size:0.85rem;border-radius:4px;cursor:pointer;">← 目次へ</button>
+      <button onclick="document.getElementById('manual-modal').remove()" style="flex:1;padding:8px;background:rgba(200,150,12,0.25);border:1px solid var(--gold);color:#f0e6c8;font-family:inherit;font-size:0.85rem;border-radius:4px;cursor:pointer;">閉じる</button>
+    </div>`;
+  box.innerHTML = html;
+  box.scrollTop = 0;
+}
+// 合体駒：1つの詳細
+function renderManualFusion(idx) {
+  const box = document.getElementById('manual-box');
+  const f = MANUAL_FUSIONS[idx];
+  if (!box || !f) return;
+  let html = `<div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">
+      <div style="font-size:1.5rem;color:${f.color};">${f.name}</div>
+      <div style="font-size:0.78rem;opacity:0.75;">${f.mat}</div></div>`;
+  // 2×2の見た目を簡易的に示す
+  html += `<div style="display:grid;grid-template-columns:repeat(2,44px);gap:2px;justify-content:center;margin:10px auto;">
+      ${[0,1,2,3].map(()=>`<div style="width:44px;height:44px;background:${f.color}22;border:1px solid ${f.color}77;display:flex;align-items:center;justify-content:center;color:${f.color};font-size:0.85rem;">${f.name}</div>`).join('')}
+    </div>
+    <div style="text-align:center;font-size:0.72rem;opacity:0.7;">盤の2×2を占有します（動けません）</div>`;
+  html += mSec('効果', f.color);
+  html += mText(f.effect);
+  html += mNote(f.hint);
+  if (f.weak) html += mNote(`発動する確率は毎ターン20%。<b style="color:${f.color}">${f.weak}の季節</b>には50%に上がります。`);
+  else html += mNote('発動する周期は8ターンごとです。');
+  html += mSec('弱点', f.color);
+  html += mText(f.weak
+    ? `素体と同じ<b style="color:${f.color}">${f.weak}</b>の弱点を持ちます。${f.weak}に相性で勝てる駒に破壊されます。`
+    : '属性を持たないため、どの駒でも破壊できます。');
+  html += `<div style="display:flex;gap:8px;margin-top:18px;">
+      <button onclick="renderManualFusionList()" style="flex:1;padding:8px;background:rgba(200,150,12,0.18);border:1px solid rgba(200,150,12,0.5);color:#f0e6c8;font-family:inherit;font-size:0.85rem;border-radius:4px;cursor:pointer;">← 合体駒へ</button>
+      <button onclick="renderManualIndex()" style="flex:1;padding:8px;background:rgba(200,150,12,0.18);border:1px solid rgba(200,150,12,0.5);color:#f0e6c8;font-family:inherit;font-size:0.85rem;border-radius:4px;cursor:pointer;">目次へ</button>
+    </div>`;
+  box.innerHTML = html;
+  box.scrollTop = 0;
+}
+
+// 自陣と敵陣のページ（盤の図で示す）
+function renderManualZone() {
+  const box = document.getElementById('manual-box');
+  if (!box) return;
+  let html = `<div style="font-size:1.05rem;color:var(--gold);letter-spacing:0.12em;margin-bottom:2px;">自陣と敵陣</div>
+    <div style="font-size:0.75rem;opacity:0.75;margin-bottom:8px;">盤の上下3列ずつ。多くのルールがこの区分に関わります</div>`;
+  // 盤の図（9×9を簡略化して3つの帯で表す）
+  html += `<div style="margin:10px auto;max-width:240px;">
+    <div style="padding:12px 0;text-align:center;background:rgba(140,60,60,0.28);border:1px solid rgba(220,120,110,0.5);border-radius:4px 4px 0 0;font-size:0.85rem;">
+      敵陣（3列）<span style="display:block;font-size:0.7rem;opacity:0.75;margin-top:2px;">ここに入ると種駒・陰・陽が成る</span></div>
+    <div style="padding:16px 0;text-align:center;background:rgba(0,0,0,0.2);border-left:1px solid rgba(200,150,12,0.3);border-right:1px solid rgba(200,150,12,0.3);font-size:0.85rem;">
+      中央（3列）<span style="display:block;font-size:0.7rem;opacity:0.75;margin-top:2px;">どちらの陣でもない</span></div>
+    <div style="padding:12px 0;text-align:center;background:rgba(60,110,140,0.28);border:1px solid rgba(110,180,220,0.5);border-radius:0 0 4px 4px;font-size:0.85rem;">
+      自陣（3列）<span style="display:block;font-size:0.7rem;opacity:0.75;margin-top:2px;">駒が最初に並ぶ場所</span></div>
+    </div>`;
+  html += mSec('自陣でできないこと');
+  html += mText(`${mKey('術を使えません')}。五行駒・五神駒の術は、自陣の外に出てから発動します。`);
+  html += mNote('玄武の移動切替だけは例外で、自陣でも使えます（術ではなく構えの切り替えのため）。');
+  html += mSec('敵陣で起きること');
+  html += mText(`種駒・陰・陽が${mKey('敵陣に入ると成ります')}。持ち駒から敵陣に打った場合も、その場で成った状態で現れます。`);
+  html += mSec('打ち込み');
+  html += mText('持ち駒は敵陣を含む空きマスに打てます。ただし打った直後に動けなくなる位置には打てません。');
+  html += `<div style="display:flex;gap:8px;margin-top:18px;">
+      <button onclick="renderManualIndex()" style="flex:1;padding:8px;background:rgba(200,150,12,0.18);border:1px solid rgba(200,150,12,0.5);color:#f0e6c8;font-family:inherit;font-size:0.85rem;border-radius:4px;cursor:pointer;">← 目次へ</button>
+      <button onclick="document.getElementById('manual-modal').remove()" style="flex:1;padding:8px;background:rgba(200,150,12,0.25);border:1px solid var(--gold);color:#f0e6c8;font-family:inherit;font-size:0.85rem;border-radius:4px;cursor:pointer;">閉じる</button>
+    </div>`;
+  box.innerHTML = html;
+  box.scrollTop = 0;
+}
+
+// 陰・陽のページ（通常／成りをタブで切り替える）
+function renderManualInYou(mode) {
+  const box = document.getElementById('manual-box');
+  if (!box) return;
+  const isProm = (mode === 'promoted');
+  const tab = (label, m, on) => `<button onclick="renderManualInYou('${m}')" style="flex:1;padding:8px 4px;font-family:inherit;font-size:0.85rem;border-radius:4px;cursor:pointer;border:1px solid ${on?'var(--gold)':'rgba(200,150,12,0.3)'};background:${on?'rgba(200,150,12,0.25)':'rgba(0,0,0,0.25)'};color:${on?'#f0e6c8':'rgba(230,215,180,0.7)'};">${label}</button>`;
+  let html = `<div style="font-size:1.05rem;color:var(--gold);letter-spacing:0.12em;margin-bottom:2px;">陰 / 陽</div>
+    <div style="font-size:0.75rem;opacity:0.75;margin-bottom:8px;">属性を持たず、相性を無視してどの駒でも倒せます</div>
+    <div style="display:flex;gap:6px;margin-bottom:10px;">${tab('通常','normal',!isProm)}${tab('成り駒','promoted',isProm)}</div>`;
+  if (!isProm) {
+    html += mSec('見た目');
+    html += mPieceShowcase([
+      { spec:{type:'in', team:'ten'}, label:'陰' },
+      { spec:{type:'you', team:'ten'}, label:'陽' },
+    ], 54);
+    html += mSec('陰（黒）');
+    html += renderMoveGrid({type:'in'});
+    html += mText('角の動き。斜めに何マスでも進めます。');
+    html += mSec('陽（白）');
+    html += renderMoveGrid({type:'you'});
+    html += mText('飛車の動き。縦横に何マスでも進めます。');
+    html += mSec('成り方');
+    html += mText(`敵陣（相手側3列）に入ると成れます。持ち駒から敵陣に打った場合も、その場で成った状態で現れます。`);
+    html += mNote('同じ暗黒竜・耀白龍が既に盤上にいる場合は成れません。');
+  } else {
+    html += mSec('見た目');
+    html += mPieceShowcase([
+      { spec:{type:'in', promoted:true, team:'ten'}, label:'暗黒竜' },
+      { spec:{type:'you', promoted:true, team:'ten'}, label:'耀白龍' },
+    ], 54);
+    html += mSec('暗黒竜（陰の成り）');
+    html += renderMoveGrid({type:'in', promoted:true});
+    html += mText('角の動きに加えて、前後左右にも1マス動けます。');
+    html += mSec('耀白龍（陽の成り）');
+    html += renderMoveGrid({type:'you', promoted:true});
+    html += mText('飛車の動きに加えて、斜めにも1マス動けます。');
+    html += mNote('どちらも1人につき盤上に1枚までです。倒されると、また成れるようになります。');
+  }
+  html += `<div style="display:flex;gap:8px;margin-top:18px;">
+      <button onclick="renderManualIndex()" style="flex:1;padding:8px;background:rgba(200,150,12,0.18);border:1px solid rgba(200,150,12,0.5);color:#f0e6c8;font-family:inherit;font-size:0.85rem;border-radius:4px;cursor:pointer;">← 目次へ</button>
+      <button onclick="document.getElementById('manual-modal').remove()" style="flex:1;padding:8px;background:rgba(200,150,12,0.25);border:1px solid var(--gold);color:#f0e6c8;font-family:inherit;font-size:0.85rem;border-radius:4px;cursor:pointer;">閉じる</button>
+    </div>`;
+  box.innerHTML = html;
+  box.scrollTop = 0;
+}
+
+// 五行駒：属性を選ぶページ
+function renderManualGogyouSelect() {
+  const box = document.getElementById('manual-box');
+  if (!box) return;
+  const C = MANUAL_ATTR_COLOR;
+  let html = `<div style="font-size:1.05rem;color:var(--gold);letter-spacing:0.12em;margin-bottom:2px;">五行駒</div>
+    <div style="font-size:0.75rem;opacity:0.75;margin-bottom:10px;">属性を選ぶと、動き・術・成り駒が見られます</div>`;
+  const sub = { '木':'斜め1マス／壁を作る', '火':'桂馬跳び／炎を溜める', '土':'左右に長い／地中に潜る', '金':'金将の動き／正面を薙ぐ', '水':'前へ走る／引き寄せる' };
+  const gname = { '木':'青龍', '火':'朱雀', '土':'麒麟', '金':'白虎', '水':'玄武' };
+  html += `<div style="display:flex;flex-direction:column;gap:6px;">`;
+  ['木','火','土','金','水'].forEach(a => {
+    const c = C[a];
+    html += `<button onclick="renderManualAttr('${a}')" style="position:relative;overflow:hidden;width:100%;min-height:66px;text-align:left;padding:14px 16px;background:linear-gradient(100deg, ${c}55 0%, ${c}28 50%, rgba(0,0,0,0.3) 100%);border:1px solid ${c}88;border-radius:6px;color:#f0e6c8;font-family:inherit;font-size:0.95rem;cursor:pointer;">
+        <span style="position:absolute;right:4px;top:50%;transform:translateY(-50%);font-size:3.4rem;color:${c};opacity:0.4;font-weight:bold;pointer-events:none;line-height:1;">${a}</span>
+        <span style="position:relative;display:block;text-shadow:0 1px 3px rgba(0,0,0,0.9);"><span style="color:${c};">${a}の駒</span> → ${gname[a]}
+        <span style="display:block;font-size:0.74rem;opacity:0.8;margin-top:4px;">${sub[a]}</span></span></button>`;
+  });
+  html += `</div>`;
+  html += `<div style="margin-top:12px;">` + `<button onclick="renderManualGogyouCommon()" style="width:100%;padding:8px;background:rgba(0,0,0,0.25);border:1px dashed rgba(200,150,12,0.5);color:rgba(240,230,200,0.9);font-family:inherit;font-size:0.8rem;border-radius:4px;cursor:pointer;">相性と成りの仕組みを見る →</button>` + `</div>`;
+  html += `<div style="display:flex;gap:8px;margin-top:18px;">
+      <button onclick="renderManualIndex()" style="flex:1;padding:8px;background:rgba(200,150,12,0.18);border:1px solid rgba(200,150,12,0.5);color:#f0e6c8;font-family:inherit;font-size:0.85rem;border-radius:4px;cursor:pointer;">← 目次へ</button>
+      <button onclick="document.getElementById('manual-modal').remove()" style="flex:1;padding:8px;background:rgba(200,150,12,0.25);border:1px solid var(--gold);color:#f0e6c8;font-family:inherit;font-size:0.85rem;border-radius:4px;cursor:pointer;">閉じる</button>
+    </div>`;
+  box.innerHTML = html;
+  box.scrollTop = 0;
+}
+
+// 種駒のページ（駒の説明のひとつ）
+function renderManualSeed() {
+  const box = document.getElementById('manual-box');
+  if (!box) return;
+  let html = `<div style="font-size:1.05rem;color:var(--gold);letter-spacing:0.12em;margin-bottom:2px;">種駒</div>
+    <div style="font-size:0.75rem;opacity:0.75;margin-bottom:6px;">育てて五行駒にする、最も数の多い駒</div>`;
+  html += mSec('見た目');
+  html += mPieceShowcase(['木','火','土','金','水'].map(a => ({ spec:{type:'tane', attr:a, team:'ten'}, label:a })), 44);
+  html += mSec('動き');
+  // 通常（1マス）と初回（2マス）を並べて示す
+  html += `<div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin:6px 0;">
+    <div style="text-align:center;">
+      ${renderMoveGrid({type:'tane', attr:'木', hasMoved:true})}
+      <div style="font-size:0.7rem;opacity:0.75;margin-top:2px;">通常</div>
+    </div>
+    <div style="text-align:center;">
+      ${renderMoveGrid({type:'tane', attr:'木'})}
+      <div style="font-size:0.7rem;opacity:0.75;margin-top:2px;">※最初の移動のみ</div>
+    </div>
+  </div>`;
+  html += mText('前に1マスずつ進みます。まだ一度も動いていない種駒だけ、2マス進めます。');
+  html += mNote('横や後ろへは動けません。');
+  html += mSec('属性と相性');
+  html += mText('種駒にも五行の属性があり、相性は五行駒とまったく同じです。');
+  html += mSec('成長');
+  html += mText(`敵陣（相手側3列）に入ると、その属性の${mKey('五行駒')}に成長します。持ち駒から敵陣に打った場合も、その場で五行駒として現れます。`);
+  html += mText(`また、持ち駒の種駒を${mKey('盤上の同じ属性の種駒に重ねて打つ')}と、2枚がひとつになって五行駒になります。`);
+  html += mNote('同じ列に自分の種駒を2枚置くことはできません（二歩）。');
+  html += `<div style="display:flex;gap:8px;margin-top:18px;">
+      <button onclick="renderManualIndex()" style="flex:1;padding:8px;background:rgba(200,150,12,0.18);border:1px solid rgba(200,150,12,0.5);color:#f0e6c8;font-family:inherit;font-size:0.85rem;border-radius:4px;cursor:pointer;">← 目次へ</button>
+      <button onclick="document.getElementById('manual-modal').remove()" style="flex:1;padding:8px;background:rgba(200,150,12,0.25);border:1px solid var(--gold);color:#f0e6c8;font-family:inherit;font-size:0.85rem;border-radius:4px;cursor:pointer;">閉じる</button>
+    </div>`;
+  box.innerHTML = html;
+  box.scrollTop = 0;
 }
 
 // 詳細を表示
@@ -3834,10 +5037,9 @@ function renderManualDetail(id) {
   if (!g) return;
   let html = `<div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;">
       <button onclick="renderManualIndex()" style="padding:6px 12px;background:rgba(200,150,12,0.15);border:1px solid rgba(200,150,12,0.4);border-radius:4px;color:#f0e6c8;font-family:inherit;font-size:0.8rem;cursor:pointer;">← 目次</button>
-      <h3 style="color:var(--gold);font-size:1.05rem;letter-spacing:0.05em;"><span>${g.id}.</span> ${g.title}</h3>
+      <h3 style="color:var(--gold);font-size:1.05rem;letter-spacing:0.05em;">${g.title}</h3>
     </div>
     <div style="font-size:0.85rem;">${g.render()}</div>
-    ${(() => { const vk = {4:'promote',6:'fusion',7:'season',8:'jutsu',10:'basics'}[g.id]; return vk ? `<div style="text-align:center;margin-top:10px;">${videoButtonHtml(vk)}</div>` : ''; })()}
     <div style="text-align:center;margin-top:18px;">
       <button onclick="renderManualIndex()" style="padding:8px 24px;background:rgba(200,150,12,0.25);border:1px solid var(--gold);color:#f0e6c8;font-family:inherit;font-size:0.9rem;border-radius:4px;cursor:pointer;">← 目次に戻る</button>
     </div>`;
@@ -3848,26 +5050,120 @@ function renderManualDetail(id) {
 }
 
 // 術・結界発動の強調表示（kind: '術' | '結界'、name: 効果名）
+// 結界ごとの色（素体の属性に合わせる）。バナーと盤上のエフェクトで共通して使う
+const KEKKAI_COLOR = {
+  '樹海':'rgba(120,210,120,1)',  // 木
+  '大火':'rgba(240,130,80,1)',   // 火
+  '焚沃':'rgba(220,180,90,1)',   // 土
+  '鉱山':'rgba(230,230,245,1)',  // 金
+  '水晶':'rgba(120,180,235,1)',  // 水
+  '玄極':'rgba(160,130,220,1)',  // 陰陽（闇）
+  '太極':'rgba(245,225,150,1)',  // 陰陽（光）
+};
+// 結界の効果を、誰に何が起きたかが分かる一文にする
+function kekkaiEffectText(name, ownerTeam) {
+  const own = (ownerTeam === 'ten') ? '天' : '冥';   // 結界の持ち主
+  const foe = (ownerTeam === 'ten') ? '冥' : '天';   // 相手
+  switch (name) {
+    case '樹海': return `⚠️ ${foe}のターンがスキップされた！<br>周囲に壁が茂った`;
+    case '大火': return `⚠️ 隣接する${foe}の駒を焼き払った！`;
+    case '焚沃': return `✨ ${own}の種駒が新たに芽吹いた！`;
+    case '鉱山': return `⚠️ ${own}の駒がこのターン、相性を無視して戦える！`;
+    case '水晶': return `⚠️ ${foe}の駒が操られた！`;
+    case '玄極': return `⚠️ ${foe}の駒がひとつ前の姿に戻された！`;
+    case '太極': return `✨ ${own}の駒がひとつ成った！`;
+    default:     return '結界の力が働いた！';
+  }
+}
+// 結界（合体駒）の効果発動を盤上で示す：その合体駒を輝かせ、波紋を広げる
+function flashKekkai(name) {
+  try {
+    // 名前が一致する合体駒を探す（両陣営）
+    let target = null;
+    for (const t of ['ten','mei']) {
+      const f = (fusionPieces[t]||[]).find(x => x.name === name);
+      if (f) { target = f; break; }
+    }
+    if (!target) return;
+    const cells = [
+      [target.topRow, target.leftCol], [target.topRow, target.leftCol+1],
+      [target.topRow+1, target.leftCol], [target.topRow+1, target.leftCol+1],
+    ];
+    // 盤のセルは9×9の順に並んでいるので、インデックスで取り出す
+    const boardEl = document.getElementById('board');
+    if (!boardEl) return;
+    const all = boardEl.querySelectorAll('.cell');
+    cells.forEach(([r,c]) => {
+      if (r<0||r>=9||c<0||c>=9) return;
+      const cell = all[r*9+c];
+      if (!cell) return;
+      const fe = cell.querySelector('.fusion-cell');
+      const col = KEKKAI_COLOR[name] || 'rgba(230,190,255,0.9)';
+      if (fe) {
+        fe.classList.remove('kekkai-active');
+        void fe.offsetWidth; // アニメーションを再生し直す
+        fe.style.setProperty('--kekkai-color', col);
+        fe.classList.add('kekkai-active');
+        setTimeout(() => fe.classList.remove('kekkai-active'), 1200);
+      }
+      // 波紋（4マスの外側に向かって広がる）。色は合体駒ごとに変える
+      const rip = document.createElement('div');
+      rip.className = 'kekkai-ripple';
+      rip.style.borderColor = col;
+      cell.appendChild(rip);
+      // 吹き出しは2×2の上段中央あたりに1つだけ出す（何が起きたかを文で伝える）
+      if (r === target.topRow && c === target.leftCol + 1) {
+        const bub = document.createElement('div');
+        // 盤の上のほうにある結界は、吹き出しを下向きに出す（画面外へ出ないように）
+        bub.className = 'kekkai-bubble' + (target.topRow <= 1 ? ' below' : '');
+        bub.style.setProperty('--kekkai-color', col);
+        bub.innerHTML = `<span class="kb-name">${name}</span>${kekkaiEffectText(name, target.team)}`;
+        cell.appendChild(bub);
+        setTimeout(() => bub.remove(), 2500);
+      }
+      setTimeout(() => rip.remove(), 950);
+    });
+  } catch(e) {}
+}
+
 function showEffectBanner(kind, name) {
   // 効果音：術／合体・結界
-  if (window.AGX) { if (kind==='術') window.AGX.SE.jutsu(); else if (kind==='結界'||kind==='合体') window.AGX.SE.fusion(); }
+  if (window.AGX) {
+    if (kind==='術') window.AGX.SE.jutsu();
+    else if (kind==='合体') window.AGX.SE.fusion();
+    else if (kind==='結界') { if (window.AGX.SE.kekkai) window.AGX.SE.kekkai(); else window.AGX.SE.fusion(); }
+  }
   // ログ記録：術の使用、結界（合体駒効果）の発動
   if (kind === '術') logJutsu(name);
   else if (kind === '結界') {
     // 合体駒の誕生は別途logFusionCreateで記録するため、ここでは効果発動のみ
     const fusionNames = ['樹海','大火','焚沃','鉱山','水晶','玄極','太極'];
-    if (fusionNames.includes(name) && !fusionBirthBanner) logFusionEffect(name);
+    if (fusionNames.includes(name) && !fusionBirthBanner) {
+      logFusionEffect(name);
+      flashKekkai(name); // 盤上でその結界を輝かせる
+    }
   }
   const old = document.getElementById('effect-banner');
   if (old) old.remove();
   const isKekkai = kind === '結界';
-  const accent = isKekkai ? 'rgba(200,120,220,1)' : 'rgba(255,210,90,1)';
+  // 結界は合体駒ごとに色を変え、何が起きたか一目で分かるようにする（素体の属性色に合わせる）
+  const accent = isKekkai ? (KEKKAI_COLOR[name] || 'rgba(200,120,220,1)') : 'rgba(255,210,90,1)';
   // 盤を隠さない：画面上部に横断する帯をスライドインさせる
   const banner = document.createElement('div');
   banner.id = 'effect-banner';
   banner.style.cssText = `position:fixed; top:0; left:0; right:0; z-index:2000; display:flex; align-items:center; justify-content:center; gap:14px; padding:12px 18px; background:linear-gradient(90deg, rgba(20,12,6,0) 0%, rgba(20,12,6,0.96) 20%, rgba(20,12,6,0.96) 80%, rgba(20,12,6,0) 100%); border-bottom:2px solid ${accent}; box-shadow:0 4px 24px ${accent}55; transform:translateY(-120%); transition:transform 0.32s cubic-bezier(0.2,0.8,0.3,1); pointer-events:none;`;
+  // 結界のときは効果の要点も一行添える（何が起きたのか分かるように）
+  const KEKKAI_SHORT = {
+    '樹海':'相手のターンを奪い、壁が茂る', '大火':'隣接する敵を焼く', '焚沃':'種駒が芽吹く',
+    '鉱山':'相性を無視して戦える', '水晶':'相手の駒を操る',
+    '玄極':'相手の駒をひとつ前の姿へ', '太極':'味方を1つ成らせる',
+  };
+  const shortText = isKekkai ? (KEKKAI_SHORT[name] || '') : '';
   banner.innerHTML = `<span style="font-size:0.72rem; letter-spacing:0.3em; color:${accent}; opacity:0.9;">${kind}</span>
-    <span style="font-size:1.5rem; font-weight:bold; color:#f0e6c8; letter-spacing:0.12em; text-shadow:0 0 12px ${accent}88;">${name}</span>
+    <span style="display:flex; flex-direction:column; align-items:center; gap:2px;">
+      <span style="font-size:1.5rem; font-weight:bold; color:#f0e6c8; letter-spacing:0.12em; text-shadow:0 0 12px ${accent}88;">${name}</span>
+      ${shortText ? `<span style="font-size:0.7rem; color:#e8dcc0; opacity:0.85;">${shortText}</span>` : ''}
+    </span>
     <span style="font-size:0.85rem; color:${accent};">発動！</span>`;
   document.body.appendChild(banner);
   // スライドイン → 少し待って → スライドアウト（盤はずっと見えている）
@@ -4082,7 +5378,7 @@ function showPlaceOrFuseChoice(material, materialIdx) {
   }
 }
 
-// 持ち駒パネルを描画（消耗制：全10枠。所持駒＋潰れた枠（暗）＋空き枠を常に表示）
+  // 持ち駒パネルを描画（所持している駒を並べる）
 function renderCapturedPanel() {
   const panel = document.getElementById('captured-panel');
   if (!panel) return;
@@ -4202,7 +5498,7 @@ function renderBoard() {
     const p = board[sr][sc];
     if (p) {
       if (p.type==='gogyou'&&p.attr==='木'&&p.promoted) {
-        // 青龍：L字（合計3マス・1回曲がり）で到達できる全マスをハイライト
+        // 青龍：L字（合計2マス・1回曲がり）で到達できる全マスをハイライト
         const rr = getRyuReachable(p, sr, sc);
         movableCells = rr.dests.filter(d=>!d.capture).map(d=>[d.r,d.c]);
         capturableCells = rr.dests.filter(d=>d.capture).map(d=>[d.r,d.c]);
@@ -4386,6 +5682,7 @@ function renderBoard() {
         if (aiuchiCells.some(([mr,mc])=>mr===r&&mc===c)) cell.classList.add('aiuchi-cell');
       }
       if (jutsuDangerMap && jutsuDangerMap[r+','+c]) cell.classList.add('jutsu-danger'); // 術で王が倒される危険マス
+      if (jutsuDangerMap && jutsuDangerSrc[r+','+c]) cell.classList.add('jutsu-threat-src'); // その脅威を出している敵駒
       if (suishouSelectCells.some(([sr,sc])=>sr===r&&sc===c)) cell.classList.add('suishou-select');
       if (previewCell && previewCell[0]===r && previewCell[1]===c) cell.classList.add('preview-piece');
       if (previewMoveCells.some(([pr,pc])=>pr===r&&pc===c)) cell.classList.add('preview-move');
@@ -4458,8 +5755,8 @@ function renderBoard() {
       const wall = getWallAt(r, c);
       if (wall) {
         const we = document.createElement('div');
-        we.className = `wall-piece ${wall.team}${wall.fireAttr ? ' fire-attr' : ''}${wall.trail ? ' trail-wall' : ''}`;
-        we.textContent = wall.fireAttr ? '炎壁' : (wall.trail ? '道' : '壁');
+        we.className = `wall-piece ${wall.team}`; // 壁は種類を問わず同じ見た目（ルールも共通）
+        we.textContent = '壁';
         cell.appendChild(we);
       }
       // 合体駒の描画
@@ -4766,27 +6063,26 @@ function getJutsuType(piece) {
 
 // ===== ヘルプ（?ボタン）：術と合体駒の効果説明 =====
 const JUTSU_HELP = {
-  wall:      { name:'壁作成',   text:'盤上に壁を作ります（1体につき最大3個まで。上限に達すると一番古い壁が消えます）。壁は駒の進行をさえぎります。壊せるのは火・金の駒（朱雀・白虎・種駒も属性で判定）と陰・陽（暗黒竜・耀白龍）だけ。木・水・土・青龍・玄武・麒麟・王は手前で止まります。' },
-  hitame:    { name:'炎溜め',   text:'炎を溜めると6ターンの時限が始まります（火駒に残りカウント表示）。0で強制「大暴発」＝周囲8マスを相性無視・敵味方問わず破壊（王も巻き込む）。待たず「💥即起爆」すれば相性で倒せる敵だけを破壊し味方は巻き込みません。どちらも火駒は消滅。溜めた火を動かせば炎を消費します。' },
-  burrow:    { name:'潜伏',     text:'土が地中に潜みます。次の自分のターン開始時にポップアップが出て、出現場所を選んで現れます。このとき、間にある駒を無視して遠くのマスを選んだり、倒せる駒があれば直接そこに出現して倒せます。' },
-  kin:       { name:'金剛力',   text:'前方2マスの<b>敵駒だけ</b>を破壊します（相性で倒せる土・木と、金属性の駒）。<b>王も倒せます</b>。敵の壁も壊せます。味方は巻き込みません。' },
-  uzu:       { name:'渦',       text:'2マス以内の敵を目の前のマスへ引き寄せます（<b>王も引き寄せられます</b>＝要塞から引きずり出せる）。目の前が空いていないと使えません。クールダウンあり。' },
+  wall:      { name:'壁作成',   text:'盤上に壁を作ります（1体につき最大3個まで。上限に達すると一番古い壁が消えます）。壁は駒の進行をさえぎります。壊せるのは火・金の駒（朱雀・白虎・種駒も属性で判定）と陰・陽、そして王。木・水・土・青龍・玄武・麒麟は手前で止まります。' },
+  hitame:    { name:'炎溜め',   text:'炎を溜めると6ターンの時限が始まります（火駒に残りカウント表示）。0になると強制「大暴発」＝周囲8マスを相性無視・敵味方問わず破壊し、火駒も消滅します（王も巻き込む）。溜めた火を動かすと炎を消費してカウントが消えます。' },
+  burrow:    { name:'潜伏',     text:'土が地中に潜みます。次の自分のターン開始時にポップアップが出て、出現場所を選んで現れます。地中を進めるのは味方の駒の下と、自分が倒せる敵の下まで。<b>倒せない敵（土にとっての木・金など）や壁・合体駒の手前で止まります</b>。倒せる敵の位置に出現すれば、その駒を倒せます。' },
+  kin:       { name:'金剛力',   text:'前方2マスの<b>敵駒だけ</b>を破壊します（土・木・金属性の駒に加え、<b>陰・陽と王</b>も倒せます）。敵の壁も壊せます。味方と合体駒には効きません。' },
+  uzu:       { name:'渦',       text:'2マス以内の敵を目の前のマスへ引き寄せます（<b>王も引き寄せられます</b>＝要塞から引きずり出せる）。目の前が空いていないと使えません。' },
   hyouketsu: { name:'氷結',     text:'敵1体を凍らせて動けなくします（<b>王も凍らせられます</b>）。凍結できるのは<b>1人につき同時に1体</b>まで（相手の凍結とは別枠）。解除されるまで次の凍結はできません。' },
   genbuToggle:{ name:'移動切替', text:'玄武の移動を「通常＝全方向1マス（敵を倒せる）」と「スライド＝8方向直進（倒せないが、ぶつかった敵を次の自分の番まで凍らせる）」で切り替えます。切替は手番を消費せず、切り替えたその手番でそのまま動けます。' },
-  jutsu:     { name:'飛翔',     text:'盤上の壁へ飛び移ります。壁の上にいる間は攻撃されても壁が身代わりになり、朱雀は無傷で残ります（壁は壊れます）。乗った壁は炎属性になります。' },
+  jutsu:     { name:'飛翔',     text:'盤上の壁へ飛び移り、その壁を焼き払います。離れた場所の壁を消しながら移動できます。' },
   swap:      { name:'入替',     text:'印をつけた味方の駒と位置を入れ替えます。遠く離れた駒とも入れ替えられます。' },
-  byakko:    { name:'矛爪',     text:'前方2マスの敵を相性を無視して討ち取ります（<b>王も討てます</b>）。敵の合体駒も破壊できます。味方は巻き込みません。' },
+  byakko:    { name:'矛爪',     text:'前方2マスの敵を相性を無視して討ち取ります（<b>王も討てます</b>）。味方と合体駒には効きません。' },
 };
 const FUSION_HELP = {
-  '樹海': '木＋水。20%の確率で相手のターンをスキップさせます。',
-  '大火': '火＋木。20%の確率で隣接する敵駒を1つ焼きます（敵陣に切り込んで使う）。',
-  '焚沃': '土＋火。20%の確率で種駒を生みます。',
-  '鉱山': '金＋土。20%の確率で相性無視の攻撃ができるようになります。',
-  '水晶': '水＋金。20%の確率で相手の駒を1つ操作できます。',
-  '玄極': '陰＋陽。相手の成りを封じ、8ターンごとに相手の駒を1つ「無」にします。',
+  '樹海': '木＋水。20%の確率で相手のターンをスキップさせ、同時に周囲へ壁を最大2つ生やします。（季節が春の時は、確率が50%になります）',
+  '大火': '火＋木。20%の確率で隣接する敵駒を1つ焼きます。（季節が夏の時は、確率が50%になります）',
+  '焚沃': '土＋火。20%の確率で種駒を生みます（生まれた種駒は最初の2マス移動ができません）。（季節が土用の時は、確率が50%になります）',
+  '鉱山': '金＋土。20%の確率で自分の全ての駒が、相性を無視した攻撃をできるようになります。（季節が秋の時は、確率が50%になります）',
+  '水晶': '水＋金。20%の確率で相手の駒を1つ操作できます。（季節が冬の時は、確率が50%になります）',
+  '玄極': '陰＋陽。相手の成りを封じ、8ターンごとに相手の駒を1つ、ひとつ前の姿へ戻します（五神→五行→種→無）。',
   '太極': '陽＋陰。8ターンごとに味方を1つ成らせます。',
 };
-const FUSION_COMMON = '合体駒は動けません（盤面全体に作用します）。2×2は<b>敵陣にも置けます</b>が、<b>王（天・冥）を巻き込む位置には置けません</b>。対応する季節には発動率が50%に上がります。40ターン（1年）で自然消滅し、同時に1つまで・作成から40ターンは次を作れません。素体と同じ弱点を持ち、相性有利な駒で破壊できます（玄極・太極はどの駒でも破壊可。矛爪でも破壊されます）。<br>自分の合体駒はタップして<b>「散」</b>でいつでも解除でき、素体が盤へ・素材が持ち駒へ戻ります（1手消費）。ただし次の合体までの40ターンのインターバルは短縮されません。<br>合体で2×2に巻き込んだ<b>敵駒は奪って持ち駒</b>に、<b>巻き添えになった味方は持ち駒に戻り</b>ます（素体と素材は合体の対価として消費されます）。';
 
 // ?ボタンから開く説明ポップアップ
 function showPieceHelp(title, body) {
@@ -4850,20 +6146,9 @@ function showModeButtons(piece, row, col) {
   };
   document.getElementById('mode-btns').appendChild(btnHelp);
 
-  // 即起爆ボタン：炎を溜めている火駒だけに出す（相性通り・味方除外で今すぐ爆発）
+  // 即起爆は廃止（ルールの例外を減らすため）。炎を溜めた火は「動いて消費」か「時限0で大暴発」の2択。
   const oldDet = document.getElementById('btn-hi-detonate');
   if (oldDet) oldDet.remove();
-  if (piece.type==='gogyou' && piece.attr==='火' && !piece.promoted && (hiStackCount[hiKeyOf(piece)]||0) > 0) {
-    const btnDet = document.createElement('button');
-    btnDet.id = 'btn-hi-detonate';
-    btnDet.textContent = '💥 即起爆';
-    btnDet.style.cssText = 'padding:6px 14px;border:1px solid rgba(255,140,60,0.9);background:rgba(255,90,40,0.18);color:#ffb070;font-family:inherit;font-size:0.85rem;letter-spacing:0.06em;border-radius:2px;cursor:pointer;';
-    btnDet.onclick = () => {
-      selectedCell = null; setActionMode('move');
-      executeHiExplosion(piece, row, col, false, { ignoreCompat:false, hitAllies:false });
-    };
-    document.getElementById('mode-btns').appendChild(btnDet);
-  }
 
   // 自陣地内なら術ボタンを無効化（非表示ではなく薄く表示）
   // 駒の実際の現在位置をboardから再検索（渡されたrow/colが古い場合の誤判定を防ぐ）
@@ -4888,13 +6173,14 @@ function showModeButtons(piece, row, col) {
     btnJutsuMain.style.display = 'inline-block';
     btnJutsuMain.style.opacity = '0.35';
     btnJutsuMain.onclick = () => {
-      if ((turnCount - (lastUzuCastTurn[piece.team] ?? -999)) < UZU_COOLDOWN) { setLog('渦はクールダウン中です（しばらく待つと再び使えます）'); return; }
+      // なぜ撃てないのかを具体的に伝える（薄いボタンをタップすると理由が出る）
       const front = getUzuFrontCell(piece, realR, realC);
-      if (front && (board[front[0]][front[1]] || getWallAt(front[0],front[1]) || getFusionAt(front[0],front[1]))) {
-        setLog('渦は目の前のマスが空いていないと使えません');
-      } else {
-        setLog('渦で引き寄せられる敵がいません（2マス以内の敵が対象・王は不可）');
-      }
+      if (!front) { setLog('渦は盤の外へは引き寄せられません（前が盤端です）'); return; }
+      const fb = board[front[0]][front[1]];
+      if (fb) { setLog(`渦は目の前が空いていないと使えません（前に${getPieceName(fb)}がいます）`); return; }
+      if (getWallAt(front[0],front[1])) { setLog('渦は目の前が空いていないと使えません（前に壁があります）'); return; }
+      if (getFusionAt(front[0],front[1])) { setLog('渦は目の前が空いていないと使えません（前に合体駒があります）'); return; }
+      setLog('渦で引き寄せられる駒がいません（2マス以内の駒が対象。王も引き寄せられます）');
     };
   } else {
     btnJutsuMain.style.display = 'inline-block';
@@ -4973,8 +6259,18 @@ function executeKinNow(piece, dir, jutsuType) {
   }
   if (pr===-1) return;
   const cells = getKinVerticalCells(piece, pr, pc); // 目の前2マス固定（縦横選択は廃止済み）
+  showEffectBanner('術', jutsuType==='byakko' ? '矛爪' : '金剛力'); // 術の使用として記録されるようにする
   const ignoreCompat = jutsuType === 'byakko'; // 白虎は相性無視で全破壊
+  // 金剛力は合体駒に効かない（壊せるのは矛爪だけ）。何も起きなかったように見えるので理由を伝える。
+  let kinFusionMiss = null;
+  if (!ignoreCompat) {
+    for (const [cr,cc] of cells) {
+      const fz = getFusionAt(cr,cc);
+      if (fz && fz.team !== piece.team) { kinFusionMiss = fz.name; break; }
+    }
+  }
   const destroyed = executeKinJutsuAt(piece, pr, pc, cells, ignoreCompat);
+  if (kinFusionMiss) setLog(`金剛力は合体駒【${kinFusionMiss}】には効きません（合体駒を壊せるのは矛爪＝白虎の術です）`);
   if (jutsuType === 'kin') lastJutsuPiece = piece; // 金剛力＝術使用（金剛虎撃は白虎=成り済みなので除外）
   selectedCell = null;
   setActionMode('move');
@@ -5102,6 +6398,31 @@ function rematchLocal() {
 function executeMove(sr, sc, row, col, selPiece) {
   // 直前の手を記録（移動元→移動先）
   lastMove = { from:[sr,sc], to:[row,col] };
+  // 凍結は座標で管理しているため、駒が動いたら移動元、駒を取ったら移動先の凍結を必ず解除する
+  clearFrozenAt(sr, sc);
+  clearFrozenAt(row, col);
+  // 火（未成り）が炎を溜めた状態で動いたら、その時点で炎を使い切る。
+  // 溜め中の火は getMoves がナイト移動を返すため、専用フロー（hiMoveState）を通らずに
+  // 通常の移動としてここへ来る経路がある。ここで消費しないと炎が残り続けてしまう。
+  try {
+    if (selPiece && selPiece.type==='gogyou' && selPiece.attr==='火' && !selPiece.promoted) {
+      const _hk = hiKeyOf(selPiece);
+      if (_hk && (hiStackCount[_hk] || 0) > 0) {
+        delete hiStackCount[_hk]; delete hiExplodeRisk[_hk]; delete hiFuseTimer[_hk];
+        showEffectBanner('術','溜め消費');
+      }
+    }
+  } catch(e) {}
+  // 性格診断用：移動回数と前進量（攻めの速さ・積極性の指標）
+  try {
+    if (gameLog && selPiece && gameLog.byTeam && gameLog.byTeam[selPiece.team]) {
+      const bt = gameLog.byTeam[selPiece.team];
+      bt.moves++;
+      const fwd = selPiece.team==='ten' ? (sr-row) : (row-sr);
+      if (fwd > 0) bt.advance += fwd; // 敵陣方向への前進量（火の評価。横移動・後退は加算しない／ボーナス移動もここを通る）
+      bt.distance += Math.abs(sr-row) + Math.abs(sc-col); // 総移動マス数（表示用。火の評価には前進量advanceを使う）
+    }
+  } catch(e){}
   pendingMoveAnim = { from:[sr,sc], to:[row,col], cap: !!(board[row][col] || getFusionAt(row,col)) }; // 移動スライド＋捕獲演出
   // 効果音：捕獲があれば攻撃した駒の属性に応じた捕獲音、なければ移動音
   const _wasCap = !!(board[row][col] || getFusionAt(row,col));
@@ -5135,32 +6456,15 @@ function executeMove(sr, sc, row, col, selPiece) {
           board[row][col] = makePiece('gogyou',pf.team,pf.attr);
           setLog(`${pf.attr}の種駒が五行駒（${pf.attr}）に成った！`);
         } else if (pf.type==='you') {
-          if (canPromoteKind(pf)) { board[row][col] = {...pf, promoted:true}; setLog('陽が耀白龍に成った！'); }
+          if (canPromoteKind(pf)) { board[row][col] = {...pf, promoted:true}; logPromote(pf.team); setLog('陽が耀白龍に成った！'); }
           else setLog('既に耀白龍が盤上にいるため、陽は成れない');
         } else if (pf.type==='in') {
-          if (canPromoteKind(pf)) { board[row][col] = {...pf, promoted:true}; setLog('陰が暗黒竜に成った！'); }
+          if (canPromoteKind(pf)) { board[row][col] = {...pf, promoted:true}; logPromote(pf.team); setLog('陰が暗黒竜に成った！'); }
           else setLog('既に暗黒竜が盤上にいるため、陰は成れない');
         }
       }
     }
     return false;
-  }
-  // 朱雀の身代わり：移動先が「壁の上に乗った朱雀」なら、捕獲する前に身代わりを発動する。
-  // （王を含むどの駒でも一度は壁が守り、朱雀は無傷で残る。以前はここより後で判定していたため、
-  //   王が朱雀を先に取ってしまい、壁だけ残って重なるバグがあった）
-  if (suzakuOnWall && suzakuOnWall.wallRow===row && suzakuOnWall.wallCol===col &&
-      suzakuOnWall.team!==currentTeam) {
-    const targetPiece = board[row][col];
-    // 移動先に朱雀本体がいて、それが壁上朱雀である場合のみ身代わり
-    if (targetPiece && targetPiece.type==='gogyou' && targetPiece.attr==='火' && targetPiece.promoted) {
-      const w = getWallAt(row, col);
-      if (w) removeWall(w.id);
-      suzakuOnWall = null;
-      setLog('朱雀の身代わり！壁駒が破壊されたが、朱雀は無傷で残った。');
-      if (window.AGX && window.AGX.SE.damage) window.AGX.SE.damage();
-      renderBoard();
-      return false; // 攻撃側は移動キャンセル（朱雀は壁のあった位置にそのまま残る）
-    }
   }
   const captured = board[row][col];
   const hadCapture = !!captured;
@@ -5187,15 +6491,14 @@ function executeMove(sr, sc, row, col, selPiece) {
     if (['tane','in','you','gogyou'].includes(captured.type) && slotsFree(currentTeam) > 0) {
       pendingCaptureChoice = { attr: captured.attr, type: captured.type, team: currentTeam };
     }
-    // 無駒を倒すと、強制的に持ち駒スロットを1枠占有（打てない＝ゴミ）
+      // 無駒を倒すと持ち駒に入るが、打つことはできない
     if (captured.type==='mu' && slotsFree(currentTeam) > 0) {
       capturedPieces[currentTeam].push(makePiece('mu', currentTeam, null));
-      setLog('「無」を倒したが、無はゴミとして持ち駒スロットを1枠埋めた…（打てない）');
+      setLog('「無」を倒した。無は持ち駒に入るが、打つことはできない');
     }
   }
   // 壁チェック
-  const wallResult = checkWallCapture(row, col, selPiece);
-  if (wallResult === 'shield') { return false; } // 身代わり発動→移動キャンセル
+  checkWallCapture(row, col, selPiece);
   if (selPiece.type === 'tane') selPiece.hasMoved = true;
   board[row][col] = selPiece; board[sr][sc] = null;
   selectedCell = null;
@@ -5208,10 +6511,10 @@ function executeMove(sr, sc, row, col, selPiece) {
         board[row][col] = makePiece('gogyou',p.team,p.attr);
         setLog(`${p.attr}の種駒が五行駒（${p.attr}）に成った！`);
       } else if (p.type==='you') {
-        if (canPromoteKind(p)) { board[row][col] = {...p, promoted:true}; setLog(`陽が耀白龍に成った！`); }
+        if (canPromoteKind(p)) { board[row][col] = {...p, promoted:true}; logPromote(p.team); setLog(`陽が耀白龍に成った！`); }
         else setLog('既に耀白龍が盤上にいるため、陽は成れない');
       } else if (p.type==='in') {
-        if (canPromoteKind(p)) { board[row][col] = {...p, promoted:true}; setLog(`陰が暗黒竜に成った！`); }
+        if (canPromoteKind(p)) { board[row][col] = {...p, promoted:true}; logPromote(p.team); setLog(`陰が暗黒竜に成った！`); }
         else setLog('既に暗黒竜が盤上にいるため、陰は成れない');
       }
       // （五神への成りは「対応する季節に、その属性の術を2回使用」に統一。旧・移動/捕獲/敵陣条件は廃止）
@@ -5258,8 +6561,8 @@ function onCellClick(row, col) {
         extra = '<br><br><span style="font-size:0.82rem;opacity:0.9;">この合体駒は<b>「散」</b>で解除できます（1手消費）。素体が盤へ、素材が持ち駒へ戻ります。<br>※次の合体までの40ターンのインターバルは短縮されません。</span>'
           + '<div style="margin-top:12px;text-align:center;"><button id="btn-scatter-fusion" style="padding:8px 22px;border:1px solid rgba(220,180,120,0.7);background:rgba(60,45,30,0.6);color:rgba(245,225,180,1);font-family:inherit;font-size:0.9rem;letter-spacing:0.12em;border-radius:3px;cursor:pointer;">散（解除する）</button></div>';
       }
-      showPieceHelp('合体駒：' + fz.name + (mine ? '（自分）' : '（相手）'),
-        eff + extra + '<br><br><span style="font-size:0.8rem;opacity:0.85;">' + FUSION_COMMON + '</span>');
+      // 盤上でタップしたときは効果の要点だけを示す（詳しい共通ルールは説明書に集約）
+      showPieceHelp('合体駒：' + fz.name + (mine ? '（自分）' : '（相手）'), eff + extra);
       if (mine) {
         setTimeout(() => {
           const btn = document.getElementById('btn-scatter-fusion');
@@ -5297,13 +6600,11 @@ function onCellClick(row, col) {
     const ssp = board[ssr][ssc];
     if (ssp && ssp.type==='gogyou' && ssp.attr==='火' && ssp.promoted) {
       const warpCells = getSuzakuWarpCells(ssp.team);
-      if (warpCells.some(([r,c])=>r===row&&c===col)) {
-        if (suzakuOnWall && suzakuOnWall.team===ssp.team) suzakuOnWall = null;
-        board[ssr][ssc] = null;
+      if (warpCells.some(([r,c])=>r===row&&c===col)) {        board[ssr][ssc] = null;
         board[row][col] = ssp;
         selectedCell = null;
-        setWallFireAttr(row, col);
-        suzakuOnWall = { pieceRef: ssp, wallRow: row, wallCol: col, team: ssp.team };
+        const burnedOn = getWallAt(row, col);
+        if (burnedOn) removeWall(burnedOn.id);
         // 飛翔が実際に完了した瞬間に咆哮＋画面フラッシュ（朱雀＝火）
         if (window.AGX && window.AGX.SE.roar) window.AGX.SE.roar('火');
         flashScreen('火');
@@ -5372,7 +6673,19 @@ function onCellClick(row, col) {
         return;
       }
     }
-    board[row][col] = makePiece(p.type, currentTeam, p.attr, false, true); // 打った駒はhasMoved=true（本将棋準拠：打った歩の初手2マス不可）
+    try { if (gameLog && gameLog.byTeam && gameLog.byTeam[currentTeam]) gameLog.byTeam[currentTeam].drops++; } catch(e){}
+    const dropped = dropResultPiece(p, row, col, currentTeam); // 種駒は敵陣なら五行駒として登場
+    board[row][col] = dropped;
+    if (p.type==='tane' && dropped.type==='gogyou') {
+      setLog(`種駒を敵陣に打ち込み、${p.attr}の五行駒として芽吹いた！`);
+    } else if ((p.type==='in' || p.type==='you') && dropped.promoted) {
+      logPromote(currentTeam);
+      setLog(`${p.type==='in'?'陰':'陽'}を敵陣に打ち込み、${p.type==='in'?'暗黒竜':'耀白龍'}として顕現した！`);
+    } else if ((p.type==='in' || p.type==='you') && !dropped.promoted) {
+      const kind = p.type==='in' ? '暗黒竜' : '耀白龍';
+      const ez = currentTeam==='ten' ? row<=2 : row>=6;
+      if (ez) setLog(`既に${kind}が盤上にいるため、成らずに打たれた`);
+    }
     list.splice(capturedSelectedIdx, 1);
     capturedSelectedIdx = null;
     renderCapturedPanel();
@@ -5468,6 +6781,7 @@ function onCellClick(row, col) {
         return; // 太極の付与は消費せず、選び直せる
       } else {
         board[row][col] = { ...piece, promoted:true };
+        logPromote(piece.team);
         setLog(`太極の力！${getPieceName(piece)}が成った！`);
         // 麒麟（土の成り）になった場合はマーキングポップアップ
         if (piece.type==='gogyou' && piece.attr==='土') {
@@ -5492,17 +6806,20 @@ function onCellClick(row, col) {
     }
     if (!_anyTarget) {
       genkyokuMuAvailable = null;
-      setLog('玄極：「無」にできる相手の駒がいないため、効果を持ち越しました。');
+      setLog('玄極：戻せる相手の駒がいないため、効果を持ち越しました。');
       renderBoard();
       return;
     }
     if (piece && piece.team!==currentTeam && piece.type!=='ten' && piece.type!=='mei') {
-      board[row][col] = makePiece('mu', piece.team, null);
+      // 一段階だけ前の姿へ戻す（五神→五行→種→無）
+      const dg = degradePiece(piece);
+      const beforeName = getPieceName(piece);
+      board[row][col] = dg.piece;
       genkyokuMuAvailable = null;
       showEffectBanner('結界','無');
-      setLog(`玄極の力！${getPieceName(piece)}が「無」になった！（もう動けず、王・陰陽でしか倒せない）`);
+      setLog(`玄極の力！${beforeName}の${dg.label}！`);
       renderBoard();
-      flashEffect([[row,col]],'mu','無');
+      flashEffect([[row,col]],'mu', dg.piece.type==='mu' ? '無' : '退');
     } else if (piece && (piece.type==='ten'||piece.type==='mei')) {
       setLog('王は「無」にできません。他の相手の駒をタップしてください。');
     }
@@ -5732,11 +7049,22 @@ function onCellClick(row, col) {
     const kirinPiece = board[kr][kc];
     // 選択中が麒麟（土の成り）であることを確認
     if (!kirinPiece || kirinPiece.type!=='gogyou' || kirinPiece.attr!=='土' || !kirinPiece.promoted) { return; }
-    // タップ先が味方の駒（麒麟自身でない）なら入れ替え
+    // タップ先が味方の駒（麒麟自身でない）なら入れ替え。
+    // ただし合体駒が重なっているマスへは入れ替えられない（合体駒と駒が同じマスに並ぶため）。
+    if (piece && piece.team===currentTeam && !(row===kr && col===kc) && getFusionAt(row,col)) {
+      setLog('合体駒が重なっているマスへは入れ替えられません');
+      return;
+    }
     if (piece && piece.team===currentTeam && !(row===kr && col===kc)) {
       const target = board[row][col];
       board[kr][kc] = target;
       board[row][col] = kirinPiece;
+      // 凍結は座標で管理しているため、入れ替えに合わせて記録も入れ替える
+      {
+        const fA = frozenAt(kr, kc), fB = frozenAt(row, col);
+        if (fA) { fA.row = row; fA.col = col; }
+        if (fB) { fB.row = kr; fB.col = kc; }
+      }
       slideMove(kr, kc, row, col, false);
       // 入れ替えが実際に完了した瞬間に演出（麒麟＝土）
       if (window.AGX) {
@@ -5884,16 +7212,13 @@ function onCellClick(row, col) {
       const warpCells = getSuzakuWarpCells(selPiece.team);
       if (warpCells.some(([r,c])=>r===row&&c===col)) {
         // 飛翔実行
-        if (suzakuOnWall && suzakuOnWall.team===selPiece.team) {
-          // 前の壁から離れる
-          suzakuOnWall = null;
-        }
         board[sr][sc] = null;
         board[row][col] = selPiece;
         selectedCell = null;
-        // 壁に火属性付与
-        setWallFireAttr(row, col);
-        suzakuOnWall = { pieceRef: selPiece, wallRow: row, wallCol: col, team: selPiece.team };
+        // 飛び移った壁は炎で焼き払われる（壁の上に留まる仕様は廃止）
+        const burned = getWallAt(row, col);
+        if (burned) removeWall(burned.id);
+        try { flashEffect([[row,col]], 'destroy', '焼'); } catch(e){}
         // 夏ならボーナスフェイズ
         const season = SEASONS[seasonIdx % 20];
         if (season.attr === '火') {
@@ -5909,7 +7234,7 @@ function onCellClick(row, col) {
       }
     }
 
-    // 青龍：選択中に到達マス（L字・合計3マス・1回曲がり）をタップすると、その経路で移動する。
+    // 青龍：選択中に到達マス（L字・合計2マス・1回曲がり）をタップすると、その経路で移動する。
     // 通過したマスに壁を残す。着地先の敵駒・合体駒・壁は取って止まる。
     if (selPiece.type==='gogyou' && selPiece.attr==='木' && selPiece.promoted) {
       const rr = getRyuReachable(selPiece, sr, sc);
@@ -5941,11 +7266,10 @@ function onCellClick(row, col) {
         // 移動実行：出発点を空に、着地点へ
         board[sr][sc] = null;
         board[row][col] = selPiece;
-        // 通過マス（path）に壁を置く。出発点にも壁を残す（青龍が通った道）。
-        // 軌跡は「常に最新の1本だけ」：新しく置く前に、この青龍が残した古い壁を消す。
+        // 青龍は通った道すべてに壁を残す（出発点＋経路）。軌跡は常に最新の1本だけ。
         clearWallsOwnedBy(selPiece);
-        const wallSpots = [[sr,sc]].concat(dest.path);
-        for (const [wr,wc] of wallSpots) {
+        for (const [wr,wc] of [[sr,sc]].concat(dest.path || [])) {
+          if (wr===row && wc===col) continue;                       // 着地点には置かない
           if (!board[wr][wc] && !getWallAt(wr,wc) && !getFusionAt(wr,wc)) {
             placeWall(selPiece, row, col, wr, wc, {noLimit:true});
           }
@@ -5991,7 +7315,6 @@ function onCellClick(row, col) {
     if (isM||isC) {
       // 朱雀が壁から離れる
       if (selPiece.type==='gogyou' && selPiece.attr==='火' && selPiece.promoted) {
-        suzakuOnWall = null;
       }
       const ended = executeMove(sr,sc,row,col,selPiece);
       if (ended) return;
@@ -6205,11 +7528,29 @@ function genbuCanDefeat(target) {
 // 玄武の新ルール：直進して停止/破壊（反射なし）
 function executeGenbuStraight(startR, startC, dr, dc, piece) {
   const team = piece.team;
+  // 玄武自身が動く／凍った駒を取る場合、その座標の凍結を解除する（凍結は座標で管理されているため）
+  clearFrozenAt(startR, startC);
+  {
+    const _nr = startR + dr, _nc = startC + dc;
+    if (_nr>=0 && _nr<9 && _nc>=0 && _nc<9) clearFrozenAt(_nr, _nc); // 移動先（凍った駒を取る場合）
+  }
   if (!piece.genbuSlide) {
     // ===== 通常モード：全方向1マス（倒せる敵＝金/火/陰陽/王のみ捕獲） =====
     const nr = startR + dr, nc = startC + dc;
-    if (nr<0||nr>=9||nc<0||nc>=9 || getWallAt(nr,nc)) {
-      setLog('その方向へは進めません（盤端・壁）。別の方向を選んでください'); return;
+    if (nr<0||nr>=9||nc<0||nc>=9) {
+      setLog('その方向へは進めません（盤端）。別の方向を選んでください'); return;
+    }
+    // 壁：壊せる場合は破壊して進む（朱雀が乗って炎を帯びた壁は、水である玄武が壊せる）
+    const wl0 = getWallAt(nr,nc);
+    if (wl0) {
+      if (!canBreakWall(piece, wl0)) { setLog('その壁は壊せません。別の方向を選んでください'); return; }
+      board[startR][startC] = null; genbuMoveState=null; selectedCell=null;
+      removeWall(wl0.id);
+      board[nr][nc] = piece;
+      setLog('玄武が壁を破壊した！');
+      try { flashEffect([[nr,nc]], 'destroy', '壊'); } catch(e){}
+      slideMove(startR, startC, nr, nc, true); renderBoard();
+      genbuFinishTurn(piece, nr, nc); return;
     }
     const fzc = getFusionAt(nr,nc);
     if (fzc) {
@@ -6435,12 +7776,13 @@ function executeHiExplosion(piece, row, col, fromHold, opts) {
         capturedPieces[piece.team].push(makePiece(t.type, piece.team, t.attr, false));
       }
       board[r][c] = null;
+      clearFrozenAt(r, c); // 凍っていた駒が消えたら凍結も解除
     }
   }
   // 火駒自身の溜め・タイマーを消し、盤上からも除去（爆発）
   const hk = hiKeyOf(piece);
   if (hk) { delete hiStackCount[hk]; delete hiExplodeRisk[hk]; delete hiFuseTimer[hk]; }
-  if (board[row] && board[row][col]===piece) board[row][col] = null;
+  if (board[row] && board[row][col]===piece) { board[row][col] = null; clearFrozenAt(row, col); }
   try { flashEffect([[row,col]], 'fire', '爆'); } catch(e){}
   // 演出：時限満了のフル暴発はより激しく
   if (window.AGX && window.AGX.SE) { full ? (window.AGX.SE.bigExplosion ? window.AGX.SE.bigExplosion() : window.AGX.SE.fusion()) : (window.AGX.SE.explosion ? window.AGX.SE.explosion() : window.AGX.SE.capture()); }
@@ -6479,7 +7821,7 @@ function getRyuMoves(piece, row, col) {
     const t1=board[r1][c1];
     const w1=getWallAt(r1,c1);
     // 1マス目に壁：火・金のみ壊せる（火の移動なので通常は壊せる）
-    if (w1) { if (canBreakWall(piece)) captures.push([r1,c1]); continue; }
+    if (w1) { if (canBreakWall(piece, w1)) captures.push([r1,c1]); continue; }
     // 合体駒：相性で破壊できるなら攻撃対象、できないなら進入不可
     const f1=getFusionAt(r1,c1);
     if (f1) { if (canCaptureFusion(piece,f1)) captures.push([r1,c1]); continue; }
@@ -6492,9 +7834,11 @@ function getRyuMoves(piece, row, col) {
   return {moves,captures};
 }
 
-// 青龍の新移動：縦横に合計3マスまで、進路の途中で最大1回だけ直角に曲がれる（L字）。斜め不可。
+// 青龍の移動：縦横に合計2マスまで、進路の途中で最大1回だけ直角に曲がれる（L字）。斜め不可。
 // 各到達マスへの「経路」（通過セル＝壁を置く場所）も返す。
 // 返り値: { dests: [{r,c,capture:bool, path:[[r,c]...]}] }  path は出発点を含まず着地点も含まない通過マス
+// 青龍の移動距離（縦横の合計マス数。途中で1回だけ曲がれる）★調整可
+const RYU_MAX_STEPS = 2;
 function getRyuReachable(piece, row, col) {
   const team = piece.team;
   const dirs = [[-1,0],[1,0],[0,-1],[0,1]];
@@ -6517,7 +7861,7 @@ function getRyuReachable(piece, row, col) {
       // 壁：火・金のみ壊せる（青龍＝木なので通常は壊せず、手前で止まる）
       const w = getWallAt(nr,nc);
       if (w) {
-        if (canBreakWall(piece) && !seen[key]) { seen[key]=1; dests.push({r:nr,c:nc,capture:true,path:path.slice()}); }
+        if (canBreakWall(piece, w) && !seen[key]) { seen[key]=1; dests.push({r:nr,c:nc,capture:true,path:path.slice()}); }
         continue; // この先へは進めない
       }
       // 合体駒：破壊できるなら取って停止、できないなら進入不可
@@ -6545,7 +7889,7 @@ function getRyuReachable(piece, row, col) {
       }
     }
   }
-  walk(row, col, [], 3, true, null);
+  walk(row, col, [], RYU_MAX_STEPS, true, null);
   return { dests };
 }
 
@@ -6967,16 +8311,6 @@ function aiSquareAttackedBy(r, c, byTeam, mv, checkBonus) {
       }
     }
   }
-  // 壁の上の朱雀コンボ警戒（王の安全判定のみ）：敵の朱雀が壁に乗って王の隣にいると、
-  // 身代わりで守られながら次に王を取れる。これを脅威として認識し、AIに王を逃げ・壁破壊を促す。
-  if (!attacked && checkBonus && typeof suzakuOnWall !== 'undefined' && suzakuOnWall &&
-      suzakuOnWall.team === byTeam) {
-    const sr = suzakuOnWall.wallRow, sc = suzakuOnWall.wallCol;
-    // 朱雀が王(r,c)に隣接しているか（8近傍）
-    if (Math.abs(sr - r) <= 1 && Math.abs(sc - c) <= 1 && !(sr===r && sc===c)) {
-      attacked = true;
-    }
-  }
   // 戻す
   if (validMv) {
     board[mv.fromR][mv.fromC] = fromP;
@@ -7074,6 +8408,7 @@ function aiHandleTaikyoku(team) {
     setLog(`太極の力は届かない：同じ${goshinKindOf(p)}が既に盤上にいる`);
   } else {
     board[r][c] = { ...p, promoted:true };
+    logPromote(p.team);
     // 土→麒麟の場合、マーキング対象をAIが自動選択
     if (p.type==='gogyou' && p.attr==='土') {
       const marks = [];
@@ -7108,12 +8443,14 @@ function aiHandleGenkyoku(team) {
   candidates.sort((a,b) => aiPieceValue(board[b[0]][b[1]]) - aiPieceValue(board[a[0]][a[1]]));
   const [r,c] = candidates[0];
   const victim = board[r][c];
-  board[r][c] = makePiece('mu', victim.team, null);
+  const dgAi = degradePiece(victim);
+  const beforeNameAi = getPieceName(victim);
+  board[r][c] = dgAi.piece;
   genkyokuMuAvailable = null;
   showEffectBanner('結界','無');
-  setLog(`玄極の力！${getPieceName(victim)}が「無」になった！`);
+  setLog(`玄極の力！${beforeNameAi}の${dgAi.label}！`);
   renderBoard();
-  flashEffect([[r,c]],'mu','無');
+  flashEffect([[r,c]],'mu', dgAi.piece.type==='mu' ? '無' : '退');
 }
 
 // AI: 水晶の相手駒操作を処理（敵駒を1つ、不利な位置へ動かす）
@@ -7276,6 +8613,70 @@ function aiPositionEval(bd, team){
       if(attackers>=2 && escapes===0) s += 500;       // 包囲完成＝決定的
     }
   }
+  // === A. 合体駒と壁を評価する（探索盤には無いが、実際の盤の状態を参照する）===
+  // aiCloneApplyは駒の移動しか再現しないため、これらは「現在の盤の状況」として加味する。
+  // 深く読むほど誤差は出るが、まったく評価しないよりは遥かに正しい判断ができる。
+  try {
+    // 合体駒：自分のものは価値、敵のものは脅威。玄極・太極は効果が強力なので重く見る。
+    for (var ft of ['ten','mei']) {
+      var arr = fusionPieces[ft] || [];
+      for (var fi=0; fi<arr.length; fi++) {
+        var f = arr[fi];
+        var val = (f.name==='玄極' || f.name==='太極') ? 55 : 34;
+        // 対応季節なら発動率が上がるぶん価値も上がる
+        if (seasonAttr && f.baseAttr === seasonAttr) val = Math.round(val * 1.5);
+        s += (ft === team) ? val : -val;
+      }
+    }
+    // 壁：盤を制圧する資産。自分のものは加点、敵のものは減点（小さめ）。
+    for (var wi=0; wi<wallPieces.length; wi++) {
+      var w = wallPieces[wi];
+      s += (w.team === team) ? 4 : -4;
+    }
+  } catch(e) {}
+
+  // === B. 持ち駒を評価する（打ち直せる戦力）===
+  // これが無いと「駒を取る価値」が正しく測れず、取り合いの判断が甘くなる。
+  try {
+    for (var ht of ['ten','mei']) {
+      var hand = capturedPieces[ht] || [];
+      var hv = 0;
+      for (var hi=0; hi<hand.length; hi++) {
+        var hp = hand[hi];
+        if (!hp || hp.type === 'mu') continue;   // 無駒は打てないので価値なし
+        hv += (typeof aiPieceValue === 'function') ? aiPieceValue(hp) * 0.8 : 3;
+      }
+      s += (ht === team) ? hv : -hv;
+    }
+  } catch(e) {}
+
+  // === C. 季節の先読み（もうすぐ自分の季節が来るなら、成れる駒を温存する）===
+  // 季節は2ターンごとに変わる。次の節が自分の属性なら、その駒を前線に置いておく価値が上がる。
+  try {
+    var nextAttr = (typeof SEASONS!=='undefined' && SEASONS[(seasonIdx+1) % 20]) ? SEASONS[(seasonIdx+1) % 20].attr : null;
+    if (nextAttr) {
+      for (var rr2=0; rr2<9; rr2++) for (var cc2=0; cc2<9; cc2++) {
+        var p2 = bd[rr2][cc2];
+        if (!p2 || p2.team !== team) continue;
+        if (p2.type !== 'gogyou' || p2.promoted) continue;
+        if (p2.attr !== nextAttr) continue;
+        // 自陣の外にいれば次の季節に術で成れる＝その準備ができている
+        var isHome2 = (team === 'ten') ? rr2 >= 6 : rr2 <= 2;
+        if (!isHome2) s += 10;
+      }
+    }
+  } catch(e) {}
+
+  // === 術の脅威：自分の王が術の射程にいるなら大きく減点、敵王を射程に捉えているなら加点 ===
+  // これが無いと「すでに危険な位置にいる王を逃がす」判断ができない（移動時の減点だけでは不足）。
+  // 探索の最終評価に入れることで、王を安全な場所へ動かす手が正しく選ばれるようになる。
+  try {
+    var dmapEval = jutsuDangerCells(team, bd);
+    if (dmapEval && myKr >= 0 && dmapEval[myKr + ',' + myKc]) s -= 900;   // 自王が狙われている
+    var dmapFoe = jutsuDangerCells(enemy, bd);
+    if (dmapFoe && foeKr >= 0 && dmapFoe[foeKr + ',' + foeKc]) s += 400;  // 敵王を狙えている
+  } catch(e) {}
+
   s -= aiKinThreatPenalty(bd, team);   // 自分が取られうる脅威は減点
   s += aiKinThreatPenalty(bd, enemy);  // 相手を脅かせているなら加点
   return s;
@@ -7349,8 +8750,16 @@ function aiNegamax(bd, team, depth, alpha, beta){
 }
 
 function aiChooseMove(moves, team) {
+  // 王を取れる手があれば、評価を待たずに即座に選ぶ（＝その手で勝ちが確定するため）。
+  // 以前は aiEvalMove のスコア（+100000）で判定していたが、
+  // 「取り返される位置だから-50000」などの減点が重なると閾値を下回り、
+  // 勝てる手を見逃していた。取ったらその場で勝ちなので、リスク評価は無意味。
+  for (const mv of moves) {
+    const t = board[mv.toR] && board[mv.toR][mv.toC];
+    if (t && t.team !== team && (t.type === 'ten' || t.type === 'mei')) return mv;
+  }
   const scored = moves.map(mv => ({ mv, s: aiEvalMove(mv) }));
-  // 王を取れる手（勝ち）はどの難易度でも必ず選ぶ
+  // 念のためスコアでも拾う（術など、上のループで拾えない経路への保険）
   const win = scored.find(x => x.s >= 90000);
   if (win) return win.mv;
   if (aiLevel === 'easy') {
@@ -7579,10 +8988,8 @@ function aiTryJutsu(team) {
         setLog('火が味方から離れて跳んだ（自爆を回避）');
         renderBoard(); nextTurn(); return true;
       }
-      // 逃げ場が無いなら即起爆：味方は巻き込まず、相性で倒せる敵だけを道連れにする
-      executeHiExplosion(p, r, c, false, { ignoreCompat:false, hitAllies:false });
-      setLog('味方を巻き込まないよう、火が即起爆した');
-      renderBoard(); nextTurn(); return true;
+      // 逃げ場が無い場合は何もしない（即起爆は廃止）。時限が来れば大暴発する。
+      continue;
     }
     // 炎を持つ火の未成り駒を探す（敵陣外）。溜めは駒ごと（pid）。
     for (let r=0;r<9;r++) for (let c=0;c<9;c++) {
@@ -7691,7 +9098,7 @@ function aiTryJutsu(team) {
       return true;
     }
   }
-    // 青龍のL字移動（合計3マス・1回だけ曲がる）。getRyuReachableで到達マスと経路を一括取得。
+    // 青龍のL字移動（合計2マス・1回だけ曲がる）。getRyuReachableで到達マスと経路を一括取得。
   {
     for (let r=0;r<9;r++) for (let c=0;c<9;c++) {
       const p = board[r][c];
@@ -7757,11 +9164,11 @@ function aiTryJutsu(team) {
           capturedPieces[team].push(makePiece(landing.type, team, landing.attr, false));
         }
       }
-      // 移動＋経路（出発点＋通過マス）に壁を置く
+      // 移動し、通った道すべてに壁を残す（軌跡は常に最新の1本だけ）
       board[fromR][fromC]=null; board[dest.r][dest.c]=p;
-      clearWallsOwnedBy(p); // 軌跡は常に最新の1本だけ
-      const wallSpots = [[fromR,fromC]].concat(dest.path||[]);
-      for (const [wr,wc] of wallSpots) {
+      clearWallsOwnedBy(p);
+      for (const [wr,wc] of [[fromR,fromC]].concat(dest.path || [])) {
+        if (wr===dest.r && wc===dest.c) continue;                    // 着地点には置かない
         if (!board[wr][wc] && !getWallAt(wr,wc) && !getFusionAt(wr,wc)) {
           try { placeWall(p, dest.r, dest.c, wr, wc, {noLimit:true}); } catch(e){}
         }
@@ -7912,13 +9319,13 @@ function aiTryJutsu(team) {
     for (let r=0;r<9;r++) for (let c=0;c<9;c++){ const p=board[r][c]; if(p&&p.type===(team==='ten'?'mei':'ten')){ekr=r;ekc=c;} }
     warpCells.sort((a,b)=>(Math.abs(a[0]-ekr)+Math.abs(a[1]-ekc))-(Math.abs(b[0]-ekr)+Math.abs(b[1]-ekc)));
     const [wr,wc] = warpCells[0];
-    if (suzakuOnWall && suzakuOnWall.team===team) suzakuOnWall = null;
     board[ch.r][ch.c] = null;
     board[wr][wc] = ch.piece;
-    setWallFireAttr(wr, wc);
-    suzakuOnWall = { pieceRef: ch.piece, wallRow: wr, wallCol: wc, team };
+    const burnedAi = getWallAt(wr, wc);
+    if (burnedAi) removeWall(burnedAi.id);
+    try { flashEffect([[wr,wc]], 'destroy', '焼'); } catch(e){}
     showEffectBanner('術','朱雀飛翔');
-    setLog('朱雀が壁へ飛翔した！');
+    setLog('朱雀が壁へ飛翔し、その壁を焼き払った！');
     renderBoard();
     nextTurn();
     return true;
@@ -7941,6 +9348,7 @@ function aiTryJutsu(team) {
       if (!q || q.team!==team) continue;
       if (r===kr && c===kc) continue;
       if (q.type==='ten'||q.type==='mei') continue; // 王とは入れ替えない
+      if (getFusionAt(r,c)) continue;               // 合体駒が重なっているマスへは入れ替えない
       const d = ekr<0 ? 0 : (Math.abs(r-ekr)+Math.abs(c-ekc));
       if (d < bestDist) { bestDist=d; best=[r,c]; }
     }
@@ -8086,18 +9494,38 @@ function aiTryPlaceCaptured(team) {
   let ekr=-1, ekc=-1;
   const foeTeam = team==='ten' ? 'mei' : 'ten'; // 相手チーム（王のtypeも同じ文字列）
   for (let r=0;r<9;r++) for (let c=0;c<9;c++){ const q=board[r][c]; if(q&&q.type===foeTeam){ekr=r;ekc=c;} }
+  // 打ち込みの位置取り：
+  // ・王の隣に打つと王自身に取られるだけなので、密着は避けて「少し離した」位置に置く
+  // ・敵の利きがあるマスは原則避ける（味方が支えているなら許容）
+  // ・理想は敵王から3マス前後（次の手で寄せに使える距離）
+  const isDefended = (r,c) => {
+    // 自軍のいずれかの駒がそのマスに利いていれば「支えあり」
+    for (let r2=0;r2<9;r2++) for (let c2=0;c2<9;c2++) {
+      const q = board[r2][c2];
+      if (!q || q.team!==team) continue;
+      let res; try { res = getMoves(q, r2, c2, board); } catch(e) { continue; }
+      const all = (res.moves||[]).concat(res.captures||[]);
+      if (all.some(([a2,b2]) => a2===r && b2===c)) return true;
+    }
+    return false;
+  };
   let scored = cells.map(([r,c]) => {
     let sc = 0;
-    if (ekr>=0) sc -= (Math.abs(r-ekr) + Math.abs(c-ekc)) * 3; // 敵王に近いほど高評価
+    const d = (ekr>=0) ? (Math.abs(r-ekr) + Math.abs(c-ekc)) : 99;
+    if (ekr>=0) {
+      if (d <= 1) sc -= 500;                 // 王に密着＝王に取られる。ほぼ選ばない
+      else if (d === 2) sc -= 40;            // まだ近すぎる
+      else sc -= Math.abs(d - 3) * 6;        // 3マス前後が理想
+    }
     let danger = false;
     try { danger = aiSquareAttackedBy(r, c, foeTeam, null); } catch(e) { danger = false; }
-    if (danger) sc -= 40; // すぐ取られる位置は避ける
+    if (danger) sc -= isDefended(r,c) ? 60 : 300; // 取られる位置は避ける（支えがあれば許容の余地）
     return { r, c, sc: sc + Math.random()*4 };
   });
   scored.sort((a,b)=>b.sc-a.sc);
   const pick = scored[0];
   const pr = pick.r, pc = pick.c;
-  board[pr][pc] = makePiece(p.type, team, p.attr, false, true); // 打った駒はhasMoved=true（初手2マス不可）
+  board[pr][pc] = dropResultPiece(p, pr, pc, team); // 種駒は敵陣なら五行駒として登場
   lastMove = { from:null, to:[pr,pc] };
   pendingSummonFx = { r:pr, c:pc, name: getPieceName(board[pr][pc]) };
   list.splice(idx, 1);
@@ -8158,6 +9586,24 @@ function aiDoMove() {
   // 確率で特殊行動（術・合体・持ち駒打ち）を試みる。実行したらターン終了。
   // ただし王手されている時は、まず王手回避を最優先（特殊行動で別の場所に動かない）
   const inCheck = (typeof isKingInCheck==='function') ? isKingInCheck(team) : false;
+  // 【最優先】相手の王を取れる手があるなら、術も合体も後回しにして即座に勝ちを取る。
+  // 以前は術・合体を先に確率で試していたため、勝てる局面を逃していた。
+  {
+    const winMoves = aiCollectMoves(team).filter(m => {
+      const t = board[m.toR] && board[m.toR][m.toC];
+      return t && t.team !== team && (t.type === 'ten' || t.type === 'mei');
+    });
+    if (winMoves.length > 0) {
+      const w = winMoves[0];
+      const wp = board[w.fromR][w.fromC];
+      aiThinking = false;
+      aiRecordMove(team, wp, w.fromR, w.fromC, w.toR, w.toC);
+      const endedWin = executeMove(w.fromR, w.fromC, w.toR, w.toC, wp);
+      renderBoard();
+      if (!endedWin) nextTurn();
+      return;
+    }
+  }
   // 特殊行動は内部でnextTurnを呼ぶため、先にフラグを下げておく
   aiThinking = false;
   if (!inCheck && aiTrySpecialAction(team)) return;
@@ -8313,9 +9759,13 @@ function applyUndoSnapshot(s) {
   seasonIdx = s.seasonIdx; currentTeam = s.currentTeam; turnCount = s.turnCount; gamePhase = s.gamePhase;
   hiStackCount = { ...s.hiStackCount };
   kirinMark = JSON.parse(JSON.stringify(s.kirinMark || {}));
-  suzakuOnWall = s.suzakuOnWall ? { ...s.suzakuOnWall } : null;
   taikyokuLastGrant = { ...s.taikyokuLastGrant };
-  if (s.lastFusionSeasonIdx !== null && typeof lastFusionSeasonIdx !== 'undefined') lastFusionSeasonIdx = s.lastFusionSeasonIdx;
+  // 保存時の値をそのまま復元する（nullや未合体の状態にも正しく戻す）
+  if (typeof lastFusionSeasonIdx !== 'undefined') {
+    lastFusionSeasonIdx = s.lastFusionSeasonIdx
+      ? { ten: s.lastFusionSeasonIdx.ten ?? null, mei: s.lastFusionSeasonIdx.mei ?? null }
+      : { ten: null, mei: null };
+  }
   frozenPieces = s.frozenPieces ? { ten: s.frozenPieces.ten?{...s.frozenPieces.ten}:null, mei: s.frozenPieces.mei?{...s.frozenPieces.mei}:null } : { ten:null, mei:null };
   hiddenTsuchi = (s.hiddenTsuchi || []).map(h => ({ ...h, piece: h.piece ? { ...h.piece } : null }));
   tsuchiBurrowCount = JSON.parse(JSON.stringify(s.tsuchiBurrowCount || {}));
@@ -8514,7 +9964,7 @@ function aiRemarkKirin(kirinPos, team) {
     const cands = [];
     for (let r=0;r<9;r++) for (let c=0;c<9;c++){
       const p=board[r][c];
-      if (p && p.team===team && !(r===kr&&c===kc) && p.type!=='ten' && p.type!=='mei') cands.push([r,c]);
+      if (p && p.team===team && !(r===kr&&c===kc) && p.type!=='ten' && p.type!=='mei' && !getFusionAt(r,c)) cands.push([r,c]);
     }
     if (cands.length>0) {
       const [mr,mc]=cands[Math.floor(Math.random()*cands.length)];
@@ -8603,7 +10053,7 @@ function startDebugMode() {
   actionMode = 'move'; wallPlaceMode = false; ryuMoveState = null;
   board = Array.from({length:9}, () => Array(9).fill(null));
   wallPieces = []; wallDestroyCount = {}; wallPlaceMode = false;
-  wallPlaceOrigin = null; suzakuOnWall = null;
+  wallPlaceOrigin = null;
   hiddenTsuchi = []; tsuchiBurrowCount = {}; tsuchiAppearMode = null;
   kirinMark = {}; kirinMarkMode = null;
   debugNavState = null;
@@ -9105,9 +10555,10 @@ function onlineGetState() {
     seasonIdx, currentTeam, turnCount, gamePhase,
     hiStackCount: { ...hiStackCount },
     kirinMark: JSON.parse(JSON.stringify(kirinMark || {})),
-    suzakuOnWall: suzakuOnWall ? { ...suzakuOnWall } : null,
     taikyokuLastGrant: { ...taikyokuLastGrant },
-    lastFusionSeasonIdx: (typeof lastFusionSeasonIdx !== 'undefined') ? lastFusionSeasonIdx : null,
+    // ★参照のまま保存すると、その後の合体で中身が書き換わり過去の記録まで変わってしまう（待ったが効かない原因だった）
+    lastFusionSeasonIdx: (typeof lastFusionSeasonIdx !== 'undefined' && lastFusionSeasonIdx)
+      ? { ten: lastFusionSeasonIdx.ten, mei: lastFusionSeasonIdx.mei } : null,
     frozenPieces: { ten: frozenPieces.ten?{...frozenPieces.ten}:null, mei: frozenPieces.mei?{...frozenPieces.mei}:null },
     hiddenTsuchi: (hiddenTsuchi || []).map(h => ({ ...h, piece: h.piece ? { ...h.piece } : null })),
     tsuchiBurrowCount: JSON.parse(JSON.stringify(tsuchiBurrowCount || {})),
@@ -9126,9 +10577,13 @@ function onlineApplyState(s) {
   seasonIdx = s.seasonIdx; currentTeam = s.currentTeam; turnCount = s.turnCount; gamePhase = s.gamePhase;
   hiStackCount = { ...s.hiStackCount };
   kirinMark = JSON.parse(JSON.stringify(s.kirinMark || {}));
-  suzakuOnWall = s.suzakuOnWall ? { ...s.suzakuOnWall } : null;
   taikyokuLastGrant = { ...s.taikyokuLastGrant };
-  if (s.lastFusionSeasonIdx !== null && typeof lastFusionSeasonIdx !== 'undefined') lastFusionSeasonIdx = s.lastFusionSeasonIdx;
+  // 保存時の値をそのまま復元する（nullや未合体の状態にも正しく戻す）
+  if (typeof lastFusionSeasonIdx !== 'undefined') {
+    lastFusionSeasonIdx = s.lastFusionSeasonIdx
+      ? { ten: s.lastFusionSeasonIdx.ten ?? null, mei: s.lastFusionSeasonIdx.mei ?? null }
+      : { ten: null, mei: null };
+  }
   frozenPieces = s.frozenPieces ? { ten: s.frozenPieces.ten?{...s.frozenPieces.ten}:null, mei: s.frozenPieces.mei?{...s.frozenPieces.mei}:null } : { ten:null, mei:null };
   hiddenTsuchi = (s.hiddenTsuchi || []).map(h => ({ ...h, piece: h.piece ? { ...h.piece } : null }));
   tsuchiBurrowCount = JSON.parse(JSON.stringify(s.tsuchiBurrowCount || {}));
@@ -9467,6 +10922,14 @@ function backToMenuFromSetup() {
         var o2=ctx.createOscillator(); o2.type='square'; o2.frequency.setValueAtTime(160,t+0.04); o2.frequency.exponentialRampToValueAtTime(50,t+0.3); var g2=ctx.createGain(); g2.gain.setValueAtTime(0.28,t+0.04); g2.gain.exponentialRampToValueAtTime(0.0001,t+0.34); o2.connect(g2); g2.connect(sfx); o2.start(t+0.04); o2.stop(t+0.38); } },
     jutsu:function(){ ensure(); [660,880,1174].forEach(function(f,i){ blip(f,0.28,'sine',0.15,i*0.05); }); },
     fusion:function(){ ensure(); [262,330,392,523].forEach(function(f,i){ blip(f,0.6,'sine',0.15,i*0.05); }); blip(131,0.7,'sine',0.11,0); },
+    // 結界の効果が発動した瞬間：澄んだ鈴の一撃＋淡い共鳴（合体成立の音より短くして区別する）
+    kekkai:function(){ ensure(); if(!ctx) return; var t=tnow();
+      blip(1568,0.5,'sine',0.13,0); blip(2093,0.42,'sine',0.07,0.02); blip(1046,0.6,'sine',0.09,0.01);
+      var o=ctx.createOscillator(); o.type='sine'; o.frequency.setValueAtTime(392,t); o.frequency.exponentialRampToValueAtTime(196,t+0.5);
+      var g=ctx.createGain(); g.gain.setValueAtTime(0.12,t); g.gain.exponentialRampToValueAtTime(0.0001,t+0.55);
+      o.connect(g); g.connect(sfx); o.start(t); o.stop(t+0.6);
+      noiseHit(0.05,3000,0.06,0.01);
+    },
     win:function(){ ensure(); [523,659,784,1046].forEach(function(f,i){ blip(f,0.4,'triangle',0.19,i*0.13); }); },
     lose:function(){ ensure(); [392,311,262,196].forEach(function(f,i){ blip(f,0.5,'sine',0.17,i*0.16); }); },
     season:function(){ ensure(); blip(1046,0.5,'sine',0.12,0); blip(1568,0.5,'sine',0.08,0.05); },
