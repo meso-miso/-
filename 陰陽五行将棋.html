@@ -600,37 +600,6 @@
     100% { opacity: 1; transform: translateY(0); }
   }
 
-  .season-badge {
-    padding: 2px 10px;
-    border-radius: 2px;
-    font-weight: 700;
-    letter-spacing: 0.1em;
-  }
-  /* 季節イラスト入りの大きめバッジ */
-  .season-badge-big {
-    display: inline-flex; align-items: center; gap: 7px;
-    padding: 5px 14px 5px 10px;
-    border-radius: 20px;
-    font-size: 1.05rem;
-    box-shadow: 0 1px 6px rgba(0,0,0,0.25);
-    animation: seasonBadgePop 0.5s ease-out;
-  }
-  .season-badge-big .season-icon {
-    display: inline-flex; align-items: center;
-    filter: drop-shadow(0 0 3px currentColor);
-    animation: seasonIconFloat 3s ease-in-out infinite;
-  }
-  .season-badge-big .season-name { letter-spacing: 0.08em; }
-  @keyframes seasonBadgePop {
-    0% { transform: scale(0.85); opacity: 0.4; }
-    60% { transform: scale(1.06); }
-    100% { transform: scale(1); opacity: 1; }
-  }
-  @keyframes seasonIconFloat {
-    0%,100% { transform: translateY(0) rotate(0deg); }
-    50% { transform: translateY(-1.5px) rotate(-4deg); }
-  }
-
   /* 壁駒 */
   .wall-piece {
     position: absolute;
@@ -648,11 +617,6 @@
   }
   .wall-piece.ten { border-color: var(--gold); color: var(--gold); }
   .wall-piece.mei { border-color: var(--silver); color: var(--silver); }
-  .wall-piece.fire-attr { border-color: #e05040; color: #e05040; background: rgba(210,60,40,0.2); }
-  /* 青龍の軌跡壁：木の術の壁と区別（緑・破線・次に青龍が動くと消える） */
-  .wall-piece.trail-wall { border-style: dashed; border-color: #6fbf73; color: #8fd894; background: rgba(70,150,80,0.16); }
-  /* 樹海が茂らせた壁：深い緑の実線（青龍の軌跡＝破線とは別物） */
-  .wall-piece.jukai-wall { border-color: #3f8f4f; color: #a8dfa8; background: rgba(40,110,50,0.3); }
 
   .cell.wall-placeable { background: rgba(100,180,80,0.4); }
   .cell.fusion-base { background: rgba(200,120,220,0.5); box-shadow: inset 0 0 8px rgba(220,150,240,0.8); }
@@ -667,7 +631,6 @@
   .fusion-cell.ten { box-shadow: inset 0 0 0 2px var(--gold); }
   .fusion-cell.mei { box-shadow: inset 0 0 0 2px var(--silver); }
   .fusion-label { letter-spacing: 0.05em; }
-  @keyframes bannerPop { 0% { transform: scale(0.6); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
   /* 効果を発動した結界から出る吹き出し（何が起きたかを盤上で直接伝える） */
   .kekkai-bubble {
     position: absolute; left: 50%; bottom: calc(100% + 10px);
@@ -682,20 +645,20 @@
     white-space: normal; word-break: keep-all;
     animation: kekkaiBubble 2.4s ease-out forwards;
   }
-  /* 吹き出しの尻尾（下向き） */
+  /* 吹き出しの尻尾（下向き）。--tail-x で結界の中心を指すように左右へずらせる */
   .kekkai-bubble::after {
-    content: ''; position: absolute; top: 100%; left: 50%; transform: translateX(-50%);
+    content: ''; position: absolute; top: 100%; left: var(--tail-x, 50%); transform: translateX(-50%);
     border: 7px solid transparent; border-top-color: var(--kekkai-color, #e0b8f0);
   }
   .kekkai-bubble::before {
-    content: ''; position: absolute; top: calc(100% - 2px); left: 50%; transform: translateX(-50%);
+    content: ''; position: absolute; top: calc(100% - 2px); left: var(--tail-x, 50%); transform: translateX(-50%);
     border: 6px solid transparent; border-top-color: rgba(18,14,10,0.96); z-index: 1;
   }
   .kekkai-bubble .kb-name { display:block; font-size:0.68rem; letter-spacing:0.1em; color: var(--kekkai-color, #e0b8f0); margin-bottom:2px; }
   /* 盤の上端に近いときは下向きに出す（画面外へはみ出さないように） */
   .kekkai-bubble.below { bottom: auto; top: calc(100% + 10px); }
-  .kekkai-bubble.below::after { top: auto; bottom: 100%; border-top-color: transparent; border-bottom-color: var(--kekkai-color, #e0b8f0); }
-  .kekkai-bubble.below::before { top: auto; bottom: calc(100% - 2px); border-top-color: transparent; border-bottom-color: rgba(18,14,10,0.96); }
+  .kekkai-bubble.below::after { top: auto; bottom: 100%; left: var(--tail-x, 50%); border-top-color: transparent; border-bottom-color: var(--kekkai-color, #e0b8f0); }
+  .kekkai-bubble.below::before { top: auto; bottom: calc(100% - 2px); left: var(--tail-x, 50%); border-top-color: transparent; border-bottom-color: rgba(18,14,10,0.96); }
   @keyframes kekkaiBubble {
     0%   { transform: translateX(-50%) translateY(10px) scale(0.7); opacity: 0; }
     12%  { transform: translateX(-50%) translateY(-3px) scale(1.06); opacity: 1; }
@@ -775,6 +738,10 @@
   }
   /* 水晶：操作できる敵駒／選択中の駒（青紫で明滅） */
   .cell.suishou-select { animation: suishouPulse 1s ease-in-out infinite; cursor:pointer; z-index:2; }
+  .cell.taikyoku-cand { animation: taikyokuPulse 0.9s ease-in-out infinite; cursor:pointer; z-index:2; }
+  @keyframes taikyokuPulse { 0%,100%{ box-shadow: inset 0 0 0 2px rgba(255,255,255,0.55); } 50%{ box-shadow: inset 0 0 9px 3px rgba(255,255,255,0.98); } }
+  .ff-btn { font-size:0.72rem; padding:3px 9px; margin:2px 3px 2px 0; border-radius:12px; border:1px solid rgba(212,184,48,0.5); background:rgba(255,255,255,0.05); color:var(--washi); cursor:pointer; }
+  .ff-btn.ff-active { background:linear-gradient(160deg, rgba(212,184,48,0.4), rgba(160,130,30,0.3)); color:#ffe9a8; border-color:var(--gold); }
   @keyframes suishouPulse { 0%,100%{ box-shadow: inset 0 0 0 2px rgba(110,170,245,0.5); } 50%{ box-shadow: inset 0 0 8px 3px rgba(110,170,245,0.95); } }
   .cell.suishou-selected { box-shadow: inset 0 0 0 3px rgba(140,190,255,1); background: rgba(110,170,245,0.22); z-index:3; }
   /* 相手駒の移動予測（読み取り専用・赤系で「敵の利き」を示す） */
@@ -839,7 +806,6 @@
   .fx-badge { position:absolute; top:1px; left:1px; z-index:5; font-size:0.62rem; line-height:1; padding:1px 3px; border-radius:6px; color:#120a04; font-weight:700; pointer-events:none; box-shadow:0 0 4px rgba(0,0,0,0.5); }
   .debug-piece-btn { padding:4px 8px; border-radius:2px; font-family:inherit; font-size:0.75rem; cursor:pointer; border:1px solid rgba(255,255,255,0.2); background:transparent; color:var(--washi); letter-spacing:0.05em; }
   .debug-piece-btn.selected { border-color:rgba(220,150,220,0.8); background:rgba(150,50,150,0.3); color:rgba(220,150,220,1); }
-  .cell.debug-hover { outline:2px solid rgba(220,150,220,0.6); }
 </style>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -847,15 +813,6 @@
 <script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
 </head>
 <body>
-<!-- Netlify Forms 検出用の静的フォーム（実送信はJSでfetch）。hidden属性だと検出されないことがあるためCSSで隠す -->
-<form name="review" method="POST" data-netlify="true" netlify-honeypot="bot-field" style="position:absolute;left:-9999px;width:1px;height:1px;overflow:hidden;">
-  <input type="hidden" name="form-name" value="review" />
-  <input type="text" name="rating" />
-  <input type="text" name="difficulty" />
-  <input type="text" name="strong" />
-  <textarea name="comment"></textarea>
-  <input type="text" name="bot-field" />
-</form>
 <div id="title-screen" style="position:fixed;inset:0;z-index:5000;background:linear-gradient(180deg,#fbfaf6 0%,#f5f1e8 50%,#efe9dc 100%);display:flex;flex-direction:column;align-items:center;justify-content:space-between;padding:28px 24px;overflow-y:auto;">
   <!-- 上＝天 -->
   <div style="font-family:'Yuji Syuku',serif;font-size:1.05rem;color:rgba(40,40,40,0.32);letter-spacing:0.5em;text-align:center;padding-top:6px;">天</div>
@@ -933,7 +890,7 @@
     </div>
     <button id="title-tutorial" style="background:none;border:none;color:#7a7468;font-family:'Yuji Syuku',serif;font-size:0.82rem;letter-spacing:0.15em;cursor:pointer;text-decoration:underline;margin-bottom:6px;">？ はじめての方へ</button>
     <button id="title-manual" style="background:none;border:none;color:#7a7468;font-family:'Yuji Syuku',serif;font-size:0.82rem;letter-spacing:0.15em;cursor:pointer;text-decoration:underline;margin-bottom:6px;">📖 遊び方・ルール説明</button>
-    <button id="title-review" style="background:none;border:none;color:#7a7468;font-family:'Yuji Syuku',serif;font-size:0.82rem;letter-spacing:0.15em;cursor:pointer;text-decoration:underline;margin-bottom:10px;">✉ 感想を送る（匿名）</button>
+    <button id="title-review" style="background:none;border:none;color:#7a7468;font-family:'Yuji Syuku',serif;font-size:0.82rem;letter-spacing:0.15em;cursor:pointer;text-decoration:underline;margin-bottom:10px;">✉ アンケート（匿名）</button>
     <div id="title-version" style="font-family:'Yuji Syuku',serif;font-size:0.62rem;color:rgba(40,40,40,0.3);letter-spacing:0.1em;text-align:center;margin-bottom:6px;"></div>
     <div style="font-family:'Yuji Syuku',serif;font-size:1.05rem;color:rgba(40,40,40,0.32);letter-spacing:0.5em;text-align:center;">冥</div>
   </div>
@@ -1144,7 +1101,6 @@ let bonusPiece = null;
 // 壁駒
 let wallPieces = [];
 let wallIdCounter = 0;
-let wallDestroyCount = {};
 let wallPlaceMode = false;
 let wallPlaceOrigin = null;
 let actionMode = 'move'; // 'move' | 'wall' - 現在のアクションモード
@@ -2190,33 +2146,31 @@ function triggerFusionTurnStart(team) {
       }
     } else if (f.name === '焚沃') {
       if (Math.random() < prob) {
-        // 種駒を生み出す（合体駒の周囲の空きマスに1つ）
-        const around = getFusionSurroundingCells(f).filter(([r,c]) => !board[r][c] && !getWallAt(r,c) && !getFusionAt(r,c));
-        if (around.length>0) {
-          const [r,c] = around[Math.floor(Math.random()*around.length)];
-          const attrs = ['木','火','土','金','水'];
-          // hasMoved=true：焚沃が生んだ種駒は最初の2マス移動ができない（常に1マス）
-          board[r][c] = makePiece('tane', team, attrs[Math.floor(Math.random()*5)], false, true);
-          showEffectBanner('結界','焚沃');
-          setLog('焚沃の力！新たな種駒が芽吹いた！');
-          flashEffect([[r,c]],'create','芽');
-        }
+        // 種を1つ持ち駒に加える（盤上に量産すると機動力の低い種が邪魔になるため、手駒として渡す）
+        // 他の持ち駒（捕獲駒）と同じく通常の種（hasMoved未指定＝打ったあと通常通り動ける）。
+        const attrs = ['木','火','土','金','水'];
+        capturedPieces[team].push(makePiece('tane', team, attrs[Math.floor(Math.random()*5)], false));
+        showEffectBanner('結界','焚沃');
+        setLog('焚沃の力！種駒が持ち駒に加わった！');
+        flashEffect([[f.topRow, f.leftCol]],'create','芽'); // 合体駒の位置で芽吹きを示す
       }
     } else if (f.name === '太極') {
-      // 次の次の自分のターンごとに好きな駒を成り駒にできる
+      // 次の次の自分のターンごとに、隣接する自分の駒を1つ成らせられる（盤全体→周辺に限定）
       if (taikyokuLastGrant[team]===null || seasonIdx - taikyokuLastGrant[team] >= 4) {
-        // 成らせられる自分の駒（未成りの五行/陰/陽/種）が存在するか確認。いなければスキップ（スタック防止）。
-        let hasGrantTarget = false;
-        for (let r=0;r<9 && !hasGrantTarget;r++) for (let c=0;c<9;c++) {
+        // 太極の周囲マスにいる、成らせられる自分の駒（未成りの五行/陰/陽/種）だけが対象。
+        const cands = getFusionSurroundingCells(f).filter(([r,c]) => {
           const bp = board[r][c];
-          if (bp && bp.team===team && !bp.promoted &&
-              (bp.type==='gogyou'||bp.type==='in'||bp.type==='you'||bp.type==='tane')) { hasGrantTarget = true; break; }
-        }
-        if (hasGrantTarget) {
+          if (!bp || bp.team!==team || bp.promoted) return false;
+          if (!(bp.type==='gogyou'||bp.type==='in'||bp.type==='you'||bp.type==='tane')) return false;
+          if (bp.type!=='tane' && !canPromoteKind(bp)) return false; // 同種が既に居て成れない駒は除外
+          return true;
+        });
+        if (cands.length > 0) {
           taikyokuGrantAvailable = team;
+          taikyokuCandidates = cands;
           taikyokuLastGrant[team] = seasonIdx;
           showEffectBanner('結界','太極');
-          setLog('太極の力！好きな駒を1つ成らせることができる（駒をタップ）');
+          setLog('太極の力！隣接する自分の駒を1つ成らせられる（光っている駒をタップ）');
         }
       }
     }
@@ -2258,6 +2212,21 @@ function triggerFusionTurnStart(team) {
 }
 
 // 合体駒の周囲マス（外周）を取得
+// ヘルプ「合体駒一覧」表のフィルタ（範囲＝周辺/全体、作用＝⚠️/✨）
+window.fusionFilter = function(dim, val, btn){
+  if(!window._ff) window._ff = { range:'all', mark:'all', rate:'all' };
+  window._ff[dim] = val;
+  document.querySelectorAll('tr.ff-row').forEach(function(tr){
+    var okR = (window._ff.range==='all') || (tr.dataset.range===window._ff.range);
+    var okM = (window._ff.mark==='all')  || (tr.dataset.mark===window._ff.mark);
+    var okT = (window._ff.rate==='all')  || (tr.dataset.rate===window._ff.rate);
+    tr.style.display = (okR && okM && okT) ? '' : 'none';
+  });
+  if(btn && btn.parentElement){
+    btn.parentElement.querySelectorAll('.ff-btn').forEach(function(b){ b.classList.remove('ff-active'); });
+    btn.classList.add('ff-active');
+  }
+};
 function getFusionSurroundingCells(f) {
   const cells = [];
   for (let r=f.topRow-1; r<=f.topRow+2; r++) {
@@ -2316,15 +2285,11 @@ function placeWall(piece, ownerRow, ownerCol, r, c, opts) {
   const limit = 3; // 木の術「壁作成」：1体につき盤上3個まで
   // 青龍の軌跡（noLimit）は「最新の1本だけ残す」方式なので、この上限判定は通さない。
   // 通すと1回の移動で置いた3〜4個のうち古いものが即座に消え、軌跡が歯抜けになる。
-  // 青龍の軌跡壁は「常に最新の1本だけ」を残す方式のため、この上限判定を通さない
-  // （通さないと、1回の移動で置いた3〜4個のうち古いものが即座に消え、
-  //   壁が置かれたり置かれなかったりして見える不具合になっていた）
   if (!(opts && opts.noLimit) && owned.length >= limit) {
     owned.sort((a,b)=>a.id-b.id);
     removeWall(owned[0].id);
   }
-  // trail=true は青龍の軌跡壁（上限の対象外・次に青龍が動くと消える）。木の術で作る壁と区別する。
-  wallPieces.push({ id: wallIdCounter++, team: piece.team, row: r, col: c, ownerKey, fireAttr: false, trail: !!(opts && opts.trail), jukai: !!(opts && opts.jukai) });
+  wallPieces.push({ id: wallIdCounter++, team: piece.team, row: r, col: c, ownerKey });
   lastJutsuPiece = piece; // 術使用（成り判定用）
   try { flashEffect([[r,c]], 'create', '壁'); } catch(e){}
 }
@@ -2371,6 +2336,7 @@ let fusionBaseSelect = null; // { material, materialIdx, def, baseRow, baseCol }
 // 太極の成り付与カウント: チームごと最後に成り付与した季節index
 let taikyokuLastGrant = { ten: null, mei: null };
 let taikyokuGrantAvailable = null; // 太極の成り付与が可能なチーム（駒タップ待ち）
+let taikyokuCandidates = []; // 太極で成らせられる隣接自駒のマス一覧（白点滅＆タップ判定用）
 let genkyokuLastGrant = { ten: null, mei: null }; // 玄極の前回発動季節
 let genkyokuMuAvailable = null; // 玄極の無化が可能なチーム（相手駒タップ待ち）
 let kouzanActive = null; // 鉱山の相性無視が有効なチーム（そのターン）
@@ -2499,8 +2465,6 @@ function hiKeyOf(p) { return (p && p.pid != null) ? 'hi' + p.pid : null; }
 let hiMoveState = null;
 // 氷結状態: { row, col, untilTurn } 1つのみ保持（同時に複数凍らせられない）
 let frozenPieces = { ten:null, mei:null }; // 凍結は「かけた側」ごとに1枠（共用だと相手の凍結で自分が撃てなくなる）
-// 互換用：どちらかのチームが凍結中なら真を返す（旧コードのfrozenPiece参照を吸収）
-function anyFrozen() { return frozenPieces.ten || frozenPieces.mei || null; }
 // 玄極の無化：駒を一段階だけ前の姿へ戻す（いきなり無にはしない）。
 // 五神駒 → 五行駒 → 種駒 → 無 ／ 暗黒竜・耀白龍 → 陰・陽 → 無
 // 戻せる駒は「削られる」だけなので、守って育て直す余地が生まれる。
@@ -2981,7 +2945,7 @@ function enableTsuchiAppear(hidden) {
 // 土の出現を実行（人間・AI共通）
 function doTsuchiAppearAt(hidden, tr, tc, type2) {
   tsuchiAppearMode = null;
-  if (type2==='wall') { checkWallCapture(tr, tc, hidden.piece); }
+  if (type2==='wall') { checkWallCapture(tr, tc); }
   else if (type2==='capture') { setLog(`土が ${getPieceName(board[tr][tc])} を奪った！`); }
   else if (type2==='fusion') {
     const fu = getFusionAt(tr, tc);
@@ -3009,26 +2973,11 @@ function aiPickTsuchiAppear(hidden, cells) {
   return best;
 }
 
-function checkWallCapture(r, c, attackerPiece=null) {
+// 壁を壊す資格（canBreakWall）は呼び出し側で判定済み。ここは破壊の実行だけを行う。
+function checkWallCapture(r, c) {
   const wall = getWallAt(r, c);
   if (!wall) return false;
-  // 火属性壁は土・水のみ破壊可能
-  if (wall.fireAttr && attackerPiece) {
-    const aAttr = attackerPiece.attr;
-    if (aAttr !== '土' && aAttr !== '水') return false; // 破壊不可
-  }
-  const ownerKey = wall.ownerKey;
   removeWall(wall.id);
-  const year = Math.floor(seasonIdx / 20);
-  const season = SEASONS[seasonIdx % 20];
-  if (season.attr === '木') {
-    const key = `wall_${ownerKey}`;
-    if (!wallDestroyCount[key] || wallDestroyCount[key].year !== year) {
-      wallDestroyCount[key] = { count: 0, year };
-    }
-    wallDestroyCount[key].count++;
-    // （青龍への成りは「春に木の術を2回使用」に統一。旧・壁2破壊条件は廃止）
-  }
   setLog(`壁駒が破壊された！`);
   return true;
 }
@@ -3202,15 +3151,11 @@ function getMoves(piece, row, col, board) {
       addMove(row+dir*2, col+1);
     }
   } else if (type==='gogyou' && attr==='火' && promoted) {
-    // 朱雀：8方向1マス（王将型）＋桂馬跳び（未成りの火と同じ2点）。
-    // 術が壁ありきで控えめなぶん、移動力で存在感を持たせる。
-    addMove(row-1,col); addMove(row+1,col);
-    addMove(row,col-1); addMove(row,col+1);
-    addMove(row-1,col-1); addMove(row-1,col+1);
-    addMove(row+1,col-1); addMove(row+1,col+1);
-    // 桂馬跳び（未成りの火と同じ）：前方2マス＋左右1マスの2点へ跳ぶ
-    addMove(row+dir*2, col-1);
-    addMove(row+dir*2, col+1);
+    // 朱雀：前方の桂馬跳び4点＋前進1マス。1マスの後退・横移動は無い、飛翔専心の火の鳥。
+    // 退路が無いぶん、術「飛翔」であらかじめ後方に置いた壁へ逃げる運用がコンセプト。
+    addMove(row+dir*2, col-1); addMove(row+dir*2, col+1); // 前2・横1（未成りの火と同じ2点）
+    addMove(row+dir,   col-2); addMove(row+dir,   col+2); // 前1・横2（ナイトの広い跳び）
+    addMove(row+dir,   col);                              // 前進1マス（跳ばない前進）
   } else if (type==='gogyou' && attr==='土' && !promoted) {
     // 土：横1列全体（障害物で止まる）＋前1マス＋後1マス
     slide(0, 1); slide(0, -1);
@@ -3301,7 +3246,7 @@ function getMoves(piece, row, col, board) {
 // ============================================================
 function initBoard() {
   board = Array.from({length:9}, () => Array(9).fill(null));
-  wallPieces = []; wallDestroyCount = {}; wallPlaceMode = false; wallPlaceOrigin = null; hiddenTsuchi = []; tsuchiBurrowCount = {}; tsuchiAppearMode = null; kirinMark = {}; kirinMarkMode = null;
+  wallPieces = []; wallPlaceMode = false; wallPlaceOrigin = null; hiddenTsuchi = []; tsuchiBurrowCount = {}; tsuchiAppearMode = null; kirinMark = {}; kirinMarkMode = null;
 
   // 種列の相性運：
   // ・「自分で並べる」を選んだ場合（taneSymmetric=true）→ 対称配置にして正面を常にあいこに（実力勝負・運なし）
@@ -3687,8 +3632,8 @@ const MANUAL_FUSIONS = [
     effect:'隣接する敵駒を1つ焼き払います。',
     hint:'敵陣に切り込んで置くほど効果を発揮します。' },
   { name:'焚沃', mat:'土 ＋ 火', color:'#d0b060', weak:'土',
-    effect:'周囲に種駒を1つ生み出します（生まれた種駒は初手2マス移動ができません）。',
-    hint:'駒を増やし続けられる唯一の手段です。' },
+    effect:'種駒を1つ持ち駒に加えます（盤上ではなく手駒として得られます）。',
+    hint:'駒を増やし続けられる唯一の手段です。好きな場所に打てます。' },
   { name:'鉱山', mat:'金 ＋ 土', color:'#e8e8f0', weak:'金',
     effect:'そのターンだけ、味方全体が相性を無視して戦えるようになります。',
     hint:'普段は倒せない相手を討ち取る好機になります。' },
@@ -3720,7 +3665,7 @@ const MANUAL_ATTRS = {
       { mark:'①', title:'移動範囲の拡張', text:'カウント中は<b>チェスのナイトと同じ8方向</b>へ跳べます。動くと炎を使い切り、カウントは消えます。' },
       { mark:'②', title:'大暴発', text:'カウントが0になると、<b>自身を道連れに周囲8マスの駒を無差別に破壊</b>します（相性を無視し、敵味方も王も巻き込みます）。' },
     ],
-    goshin:{ name:'朱雀', move:'8方向に1マス、加えて桂馬跳びもできます。小回りと跳躍を併せ持ちます。',
+    goshin:{ name:'朱雀', move:'前方への桂馬跳び4点（前2横1＋前1横2）に加えて、前進1マス。後退や横移動はできません。退けないぶん、術「飛翔」で後方の壁へ逃げるのがコツです。',
              jutsu:'任意の壁へ飛び移り、<b>その壁を焼き払います</b>。離れた場所の壁を消しながら移動できます。' },
     promote:'夏に「炎溜め」を使うと成れます（任意）。',
   },
@@ -3786,15 +3731,68 @@ const MANUAL_GROUPS = [
     ・<b>味方の駒</b>…持ち駒に戻ります。<br>
     ・<b>素体と素材</b>…合体の代償として失われます。</p>
     <p style="color:var(--gold);margin-top:10px;"><b>持続と破壊</b></p>
-    <p>・合体駒は<b>動けません</b>が、盤面全体に効果を及ぼします。<br>
-    ・効果は毎ターン<b>20%</b>の確率で発動し、<b>対応する季節には50%</b>に上がります。<br>
+    <p>・合体駒は<b>動けません</b>が、盤面に効果を及ぼします（効果の<b>範囲・発動</b>は下表の通り）。<br>
     ・<b>40ターン（1年）</b>で自然に消滅します。<br>
     ・同時に持てるのは<b>1つだけ</b>。作成から40ターンは次を作れません。<br>
     ・素体と同じ弱点を持ち、相性で勝てる駒に破壊されます（玄極・太極はどの駒でも破壊できます）。</p>
     <p style="color:var(--gold);margin-top:10px;"><b>散（解除）</b></p>
     <p>自分の合体駒をタップすると<b>「散」</b>で解除できます（1手消費）。素体が盤に、素材が持ち駒に戻ります。ただし次の合体までの40ターンは短縮されません。</p>
-    <p style="font-size:0.78rem;opacity:0.85;">※それぞれの効果は「駒の説明 → 合体駒」で見られます。</p>
-  `},
+    <p style="color:var(--gold);margin-top:10px;"><b>合体駒 一覧</b></p>
+    <div style="margin:4px 0 6px;">
+      <div style="font-size:0.7rem;opacity:0.8;">範囲でしぼる</div>
+      <div>
+        <button class="ff-btn ff-active" onclick="fusionFilter('range','all',this)">すべて</button>
+        <button class="ff-btn" onclick="fusionFilter('range','周辺',this)">周辺</button>
+        <button class="ff-btn" onclick="fusionFilter('range','全体',this)">全体</button>
+      </div>
+      <div style="font-size:0.7rem;opacity:0.8;margin-top:4px;">作用でしぼる</div>
+      <div>
+        <button class="ff-btn ff-active" onclick="fusionFilter('mark','all',this)">すべて</button>
+        <button class="ff-btn" onclick="fusionFilter('mark','warn',this)">⚠️ 相手・妨害</button>
+        <button class="ff-btn" onclick="fusionFilter('mark','spark',this)">✨ 味方・強化</button>
+      </div>
+      <div style="font-size:0.7rem;opacity:0.8;margin-top:4px;">発動でしぼる</div>
+      <div>
+        <button class="ff-btn ff-active" onclick="fusionFilter('rate','all',this)">すべて</button>
+        <button class="ff-btn" onclick="fusionFilter('rate','turn',this)">毎ターン(季節50%)</button>
+        <button class="ff-btn" onclick="fusionFilter('rate','cool',this)">8ターンに1度</button>
+      </div>
+    </div>
+    <div style="overflow-x:auto;">
+    <table style="border-collapse:collapse;font-size:0.72rem;width:100%;">
+      <thead><tr style="color:var(--gold);text-align:left;">
+        <th style="padding:3px 5px;border-bottom:2px solid rgba(212,184,48,0.6);">名前</th>
+        <th style="padding:3px 5px;border-bottom:2px solid rgba(212,184,48,0.6);">合成元</th>
+        <th style="padding:3px 5px;border-bottom:2px solid rgba(212,184,48,0.6);">効果</th>
+        <th style="padding:3px 5px;border-bottom:2px solid rgba(212,184,48,0.6);">範囲</th>
+        <th style="padding:3px 5px;border-bottom:2px solid rgba(212,184,48,0.6);">発動</th>
+      </tr></thead>
+      <tbody>
+        ${[
+          ['樹海','木＋水','⚠️ 敵の手番スキップ＋周囲に壁','周辺','warn','20%<br><span style="opacity:0.7;">(春50%)</span>','turn'],
+          ['大火','火＋木','⚠️ 隣接する敵駒を1つ焼く','周辺','warn','20%<br><span style="opacity:0.7;">(夏50%)</span>','turn'],
+          ['焚沃','土＋火','✨ 種駒を1つ持ち駒に加える','全体','spark','20%<br><span style="opacity:0.7;">(土用50%)</span>','turn'],
+          ['鉱山','金＋土','✨ このターン相性無視で戦える','全体','spark','20%<br><span style="opacity:0.7;">(秋50%)</span>','turn'],
+          ['水晶','水＋金','⚠️ 敵駒を1つ操作する','全体','warn','20%<br><span style="opacity:0.7;">(冬50%)</span>','turn'],
+          ['玄極','陰＋陽','⚠️ 敵駒を1段階前の姿に戻す','全体','warn','8ターンに<br>1度','cool'],
+          ['太極','陽＋陰','✨ 隣接する自駒を1つ成らせる','周辺','spark','8ターンに<br>1度','cool'],
+        ].map(row => {
+          const colorMat = row[1].split('＋').map(a => {
+            const col = ({'木':'#7ec87e','火':'#e08050','土':'#d0b060','金':'#e8e8f0','水':'#7ab0d8','陰':'#b3a6d9','陽':'#f0de9a'})[a] || 'inherit';
+            return `<span style="color:${col};font-weight:700;">${a}</span>`;
+          }).join('<span style="opacity:0.6;">＋</span>');
+          return `<tr class="ff-row" data-range="${row[3]}" data-mark="${row[4]}" data-rate="${row[6]}" style="border-bottom:1px solid rgba(255,255,255,0.14);">
+            <td style="padding:4px 5px;font-weight:700;">${row[0]}</td>
+            <td style="padding:4px 5px;white-space:nowrap;">${colorMat}</td>
+            <td style="padding:4px 5px;">${row[2]}</td>
+            <td style="padding:4px 5px;">${row[3]}</td>
+            <td style="padding:4px 5px;white-space:nowrap;">${row[5]}</td>
+          </tr>`;
+        }).join('')}
+      </tbody>
+    </table>
+    </div>
+    <p style="font-size:0.78rem;opacity:0.85;">※それぞれの効果は「駒の説明 → 合体駒」で見られます。</p>`},
   { id:4, title:'季節とボーナス', render: () => `
     <p>季節は<b>2ターンごと</b>に移り変わり、20の節を巡って1年（40ターン）になります。</p>
     ${(() => {
@@ -3826,14 +3824,22 @@ const MANUAL_GROUPS = [
     <p>ただし<b>ボーナス移動では相手の駒を取れません</b>。空いているマスへ動くだけの、陣形を整える一歩です。壁や合体駒にも進めません。</p>
     <p style="color:var(--gold);margin-top:12px;"><b>季節が関わるルール</b></p>
     <p>・<b>成り</b>…五行駒は、対応する季節に自分の術を使うと五神駒に成れます。<br>
-    ・<b>合体駒</b>…素体と同じ季節には、効果の発動率が20%から50%に上がります。</p>
+    ・<b>合体駒</b>…五行系の合体駒（樹海・大火・焚沃・鉱山・水晶）は、素体と同じ季節に発動率が20%→50%へ上がります（玄極・太極は季節に関係なく8ターンに1度）。詳しくは「合体の仕組み」の一覧表を参照。</p>
   `},
   { id:5, title:'術のルール', render: () => `
     <p>五行駒・五神駒を選び「術」ボタンから発動します。</p>
     <p>・自陣（自分側3列）では術を使えません。<br>
     ・ボーナスアクション中は術を使えません（移動のみ）。<br>
     ・術での破壊では相手を持ち駒にできません。</p>
-    <p style="font-size:0.8rem;opacity:0.9;">術・結界が駒に効くと、そのマスが一瞬光り目印が出ます：<span style="color:rgba(230,90,70,1)">滅／焼=破壊</span>・<span style="color:rgba(110,210,120,1)">芽=種駒誕生</span>・<span style="color:rgba(185,110,220,1)">無=無化</span>・<span style="color:rgba(255,210,110,1)">成=成り付与</span>・<span style="color:rgba(110,170,245,1)">操=水晶で操作</span>。氷結は駒に❄が付きます。</p>
+    <p style="font-size:0.8rem;opacity:0.9;margin-bottom:4px;">術・結界が駒に効くと、そのマスが一瞬光り目印が出ます：</p>
+    <ul style="font-size:0.8rem;opacity:0.9;margin:0;padding-left:1.1em;line-height:1.7;">
+      <li><span style="color:rgba(230,90,70,1)">滅／焼</span> … 破壊</li>
+      <li><span style="color:rgba(110,210,120,1)">芽</span> … 種駒が生まれる</li>
+      <li><span style="color:rgba(185,110,220,1)">無</span> … 無化</li>
+      <li><span style="color:rgba(255,210,110,1)">成</span> … 成り付与</li>
+      <li><span style="color:rgba(110,170,245,1)">操</span> … 水晶で操作</li>
+      <li><span style="color:rgba(140,200,255,1)">❄</span> … 氷結（駒に付きます）</li>
+    </ul>
   `},
   { id:6, title:'持ち駒と禁じ手', render: () => `
     <p>通常移動で相手を倒すと「奪う」か選べます。奪った駒は<b>自分の駒として打ち直せます</b>（成り駒は成る前に戻ります）。</p>
@@ -4175,7 +4181,7 @@ const TUTORIAL_PAGES = [
       _lbl(150,104,'木は斜め前へ1マス')),
     h:'動かす駒をタップ→行き先をタップ。<br>・右上：⚙️オプション（相性表・対局ログ・音量・遊び方・中断）<br>・右下：↩待った（1手戻す）<br>迷ったら⚙️の「遊び方・ルール説明」に詳しいルールがあります。始めましょう！' }
 ];
-// ===== 匿名レビュー（Netlify Forms 送信） =====
+// ===== 匿名アンケート（Googleフォーム送信） =====
 const REVIEW_NG_WORDS = ['死ね','しね','殺す','ころす','殺害','ぶっ殺','くたばれ','kill you','go die'];
 function reviewHasNG(text){
   const t = (text||'').toLowerCase();
@@ -4187,69 +4193,86 @@ function showReviewModal(){
   ov.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.82);display:flex;align-items:center;justify-content:center;z-index:6000;padding:18px;overflow-y:auto;';
   const box = document.createElement('div');
   box.style.cssText = 'background:#1a1008;border:1px solid rgba(200,150,12,0.6);border-radius:10px;padding:22px;max-width:360px;width:94%;color:#f0e6c8;font-family:inherit;box-shadow:0 8px 30px rgba(0,0,0,0.6);max-height:92vh;overflow-y:auto;';
-  let rating = 0;
-  const strongOpts = ['氷結','玄武・青龍など直進系','合体駒','金剛力','特になし'];
-  const chosenStrong = new Set();
+  const GF_ACTION = 'https://docs.google.com/forms/d/e/1FAIpQLScsHN5cb4vij5UX5ps2Is977cXC7OQcvelvFPFw2uxr9iw9jg/formResponse';
+  const GF = { q1:'entry.344849185', q2:'entry.1392538590', q3:'entry.668439532', q4:'entry.691568929', q5:'entry.307320927', q6:'entry.1033278951', q7:'entry.1414296335', q8:'entry.921725136', q9:'entry.403066509' };
+  const DIFF_OPTS = ['難しい','やや難しい','普通/ちょうどいい','やや簡単','簡単','わからない'];
+  const RESIST_OPTS = ['はい','いいえ'];
+  const st = { q1:0, q2:0, q5:0, q7:0, q4:'', q9:'', q3:'', q6:'', q8:'' };
+  function saveText(){
+    const g = id => { const e = box.querySelector(id); return e ? e.value : undefined; };
+    let v;
+    if ((v=g('#rv-q3'))!==undefined) st.q3 = v;
+    if ((v=g('#rv-q6'))!==undefined) st.q6 = v;
+    if ((v=g('#rv-q8'))!==undefined) st.q8 = v;
+  }
+  const starsRow = (f) => `<div class="rv-stars" data-f="${f}" style="font-size:1.7rem;letter-spacing:0.08em;text-align:center;margin-bottom:14px;cursor:pointer;">${[1,2,3,4,5].map(n=>`<span data-n="${n}" style="color:${n<=st[f]?'#ffd76a':'rgba(240,230,200,0.28)'};">★</span>`).join('')}</div>`;
+  const radioRow = (f, opts) => `<div class="rv-radio" data-f="${f}" style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:14px;">${opts.map(o=>`<button data-v="${o}" style="padding:7px 10px;background:${st[f]===o?'rgba(200,150,12,0.38)':'rgba(200,150,12,0.12)'};border:1px solid rgba(200,150,12,0.5);color:#f0e6c8;font-family:inherit;font-size:0.78rem;border-radius:5px;cursor:pointer;">${o}</button>`).join('')}</div>`;
+  const label = (t, sub) => `<div style="font-size:0.86rem;margin-bottom:6px;">${t}${sub?`<span style="opacity:0.55;font-size:0.72rem;"> ${sub}</span>`:''}</div>`;
+  const req = '<span style="color:#e0a94a;">＊</span>';
+  const ta = (id, ph, val) => `<textarea id="${id}" rows="2" maxlength="600" placeholder="${ph}" style="width:100%;box-sizing:border-box;background:rgba(255,255,255,0.06);border:1px solid rgba(200,150,12,0.4);border-radius:5px;color:#f0e6c8;font-family:inherit;font-size:0.85rem;padding:8px;resize:vertical;margin-bottom:14px;">${val||''}</textarea>`;
   function draw(){
     box.innerHTML = `
-      <div style="color:var(--gold);font-size:1.1rem;letter-spacing:0.12em;margin-bottom:4px;text-align:center;">感想を送る</div>
-      <div style="font-size:0.72rem;opacity:0.7;text-align:center;margin-bottom:16px;">匿名で送信されます。開発の参考にさせていただきます。</div>
-      <div style="font-size:0.85rem;margin-bottom:6px;">総合満足度</div>
-      <div id="rv-stars" style="font-size:1.9rem;letter-spacing:0.1em;margin-bottom:16px;text-align:center;cursor:pointer;">${[1,2,3,4,5].map(n=>`<span data-n="${n}" style="color:${n<=rating?'#ffd76a':'rgba(240,230,200,0.28)'};">★</span>`).join('')}</div>
-      <div style="font-size:0.85rem;margin-bottom:6px;">難易度は？</div>
-      <div id="rv-diff" style="display:flex;gap:6px;margin-bottom:16px;">
-        ${['ちょうど良い','簡単すぎ','難しすぎ'].map(d=>`<button data-d="${d}" class="rv-diff-btn" style="flex:1;padding:8px 4px;background:${window.__rvDiff===d?'rgba(200,150,12,0.35)':'rgba(200,150,12,0.12)'};border:1px solid rgba(200,150,12,0.5);color:#f0e6c8;font-family:inherit;font-size:0.78rem;border-radius:5px;cursor:pointer;">${d}</button>`).join('')}
-      </div>
-      <div style="font-size:0.85rem;margin-bottom:6px;">強すぎると感じたものは？（複数可）</div>
-      <div id="rv-strong" style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:16px;">
-        ${strongOpts.map(s=>`<button data-s="${s}" class="rv-strong-btn" style="padding:7px 10px;background:${chosenStrong.has(s)?'rgba(200,150,12,0.35)':'rgba(200,150,12,0.12)'};border:1px solid rgba(200,150,12,0.5);color:#f0e6c8;font-family:inherit;font-size:0.78rem;border-radius:5px;cursor:pointer;">${s}</button>`).join('')}
-      </div>
-      <div style="font-size:0.85rem;margin-bottom:6px;">自由記述（任意）</div>
-      <textarea id="rv-comment" rows="3" maxlength="600" placeholder="良かった点・気になった点など" style="width:100%;box-sizing:border-box;background:rgba(255,255,255,0.06);border:1px solid rgba(200,150,12,0.4);border-radius:5px;color:#f0e6c8;font-family:inherit;font-size:0.85rem;padding:8px;resize:vertical;margin-bottom:6px;">${window.__rvComment||''}</textarea>
-      <div id="rv-error" style="color:#e88f88;font-size:0.76rem;min-height:16px;margin-bottom:8px;"></div>
+      <div style="color:var(--gold);font-size:1.1rem;letter-spacing:0.12em;margin-bottom:4px;text-align:center;">アンケート</div>
+      <div style="font-size:0.72rem;opacity:0.7;text-align:center;margin-bottom:16px;">匿名で送信されます。＊は必須です。</div>
+      ${label('Q1. ルール理解のしやすさ '+req,'(1:分かりにくい〜5:わかりやすい)')}${starsRow('q1')}
+      ${label('Q2. ゲームバランスの良さ '+req,'(1:悪い〜5:良い)')}${starsRow('q2')}
+      ${label('Q3. 強すぎると感じた駒は？','(任意)')}${ta('rv-q3','特になければ空欄でOK', st.q3)}
+      ${label('Q4. AI対戦の難易度 '+req)}${radioRow('q4', DIFF_OPTS)}
+      ${label('Q5. 楽しいと感じましたか？ '+req,'(1:楽しくない〜5:楽しい)')}${starsRow('q5')}
+      ${label('Q6. その理由','(任意)')}${ta('rv-q6','楽しい/楽しくないと感じた理由', st.q6)}
+      ${label('Q7. また遊びたいと思いますか？ '+req,'(1:思わない〜5:思う)')}${starsRow('q7')}
+      ${label('Q8. バグ報告・要望・ご意見など','(任意)')}${ta('rv-q8','気になった点・不具合など', st.q8)}
+      ${label('Q9. AIが作ったゲームを遊ぶことに抵抗はありますか？','(任意)')}${radioRow('q9', RESIST_OPTS)}
+      <div id="rv-error" style="color:#e88f88;font-size:0.76rem;min-height:16px;margin:2px 0 8px;"></div>
       <div style="display:flex;gap:8px;">
         <button id="rv-cancel" style="flex:1;padding:11px;background:rgba(120,120,130,0.25);border:1px solid rgba(200,200,210,0.4);color:#e8e8f0;font-family:inherit;font-size:0.9rem;border-radius:5px;cursor:pointer;">閉じる</button>
         <button id="rv-send" style="flex:2;padding:11px;background:rgba(200,150,12,0.3);border:1px solid var(--gold);color:#f0e6c8;font-family:inherit;font-size:0.95rem;border-radius:5px;cursor:pointer;">送信する</button>
       </div>`;
-    box.querySelector('#rv-stars').querySelectorAll('span').forEach(sp=>{
-      sp.onclick = () => { rating = parseInt(sp.getAttribute('data-n')); draw(); };
+    box.querySelectorAll('.rv-stars').forEach(row=>{
+      const f = row.getAttribute('data-f');
+      row.querySelectorAll('span').forEach(sp=>{ sp.onclick = () => { st[f] = parseInt(sp.getAttribute('data-n')); saveText(); draw(); }; });
     });
-    box.querySelectorAll('.rv-diff-btn').forEach(b=>{ b.onclick = () => { window.__rvDiff = b.getAttribute('data-d'); saveComment(); draw(); }; });
-    box.querySelectorAll('.rv-strong-btn').forEach(b=>{ b.onclick = () => { const s=b.getAttribute('data-s'); if(chosenStrong.has(s))chosenStrong.delete(s); else chosenStrong.add(s); saveComment(); draw(); }; });
-    box.querySelector('#rv-cancel').onclick = () => { cleanup(); ov.remove(); };
+    box.querySelectorAll('.rv-radio').forEach(row=>{
+      const f = row.getAttribute('data-f');
+      row.querySelectorAll('button').forEach(b=>{ b.onclick = () => { const v=b.getAttribute('data-v'); st[f] = (st[f]===v?'':v); saveText(); draw(); }; });
+    });
+    box.querySelector('#rv-cancel').onclick = () => ov.remove();
     box.querySelector('#rv-send').onclick = send;
   }
-  function saveComment(){ const el=box.querySelector('#rv-comment'); if(el) window.__rvComment = el.value; }
-  function cleanup(){ delete window.__rvDiff; delete window.__rvComment; }
   function send(){
-    saveComment();
-    const comment = (window.__rvComment||'').trim();
+    saveText();
     const errEl = box.querySelector('#rv-error');
-    if (rating===0 && !window.__rvDiff && chosenStrong.size===0 && !comment) { errEl.textContent = '何か1つ以上、入力してください。'; return; }
-    if (reviewHasNG(comment)) { errEl.textContent = '攻撃的な表現が含まれているようです。表現を見直してください。'; return; }
+    if (!st.q1 || !st.q2 || !st.q4 || !st.q5 || !st.q7) { errEl.textContent = '必須（＊）の項目にお答えください。'; return; }
+    if (reviewHasNG([st.q3, st.q6, st.q8].join(' '))) { errEl.textContent = '攻撃的な表現が含まれているようです。表現を見直してください。'; return; }
     const sendBtn = box.querySelector('#rv-send'); sendBtn.disabled = true; sendBtn.textContent = '送信中…';
-    const body = new URLSearchParams();
-    body.append('form-name','review');
-    body.append('rating', rating ? String(rating) : '');
-    body.append('difficulty', window.__rvDiff || '');
-    body.append('strong', Array.from(chosenStrong).join(' / '));
-    body.append('comment', comment);
-    body.append('bot-field','');
-    fetch('/', { method:'POST', headers:{'Content-Type':'application/x-www-form-urlencoded'}, body: body.toString() })
-      .then((res) => {
-        if (!res.ok) throw new Error('HTTP ' + res.status); // 404等でも成功扱いにしない
-        cleanup();
-        box.innerHTML = `<div style="text-align:center;padding:20px 8px;"><div style="color:var(--gold);font-size:1.1rem;margin-bottom:12px;">ありがとうございました！</div><div style="font-size:0.85rem;opacity:0.85;margin-bottom:20px;">いただいた感想は開発の参考にさせていただきます。</div><button id="rv-close2" style="padding:11px 28px;background:rgba(200,150,12,0.3);border:1px solid var(--gold);color:#f0e6c8;font-family:inherit;font-size:0.95rem;border-radius:5px;cursor:pointer;">閉じる</button></div>`;
-        const c=box.querySelector('#rv-close2'); if(c) c.onclick = () => ov.remove();
-      })
-      .catch((err) => {
-        sendBtn.disabled = false; sendBtn.textContent = '送信する';
-        errEl.textContent = '送信に失敗しました（' + (err && err.message ? err.message : '不明') + '）。もう一度お試しください。';
-      });
+    const fields = {};
+    fields[GF.q1]=String(st.q1); fields[GF.q2]=String(st.q2); fields[GF.q3]=st.q3||'';
+    fields[GF.q4]=st.q4||''; fields[GF.q5]=String(st.q5); fields[GF.q6]=st.q6||'';
+    fields[GF.q7]=String(st.q7); fields[GF.q8]=st.q8||''; if(st.q9) fields[GF.q9]=st.q9;
+    function thanks(){
+      box.innerHTML = `<div style="text-align:center;padding:20px 8px;"><div style="color:var(--gold);font-size:1.1rem;margin-bottom:12px;">ありがとうございました！</div><div style="font-size:0.85rem;opacity:0.85;margin-bottom:20px;">いただいた回答は開発の参考にさせていただきます。</div><button id="rv-close2" style="padding:11px 28px;background:rgba(200,150,12,0.3);border:1px solid var(--gold);color:#f0e6c8;font-family:inherit;font-size:0.95rem;border-radius:5px;cursor:pointer;">閉じる</button></div>`;
+      const c=box.querySelector('#rv-close2'); if(c) c.onclick = () => ov.remove();
+    }
+    try {
+      // 隠しiframe＋フォームPOSTでGoogleフォームへ送信（fetchのCORS/CSP制約を受けにくい確実な方法）。
+      // Googleは応答を返さない（クロスオリジン）ため、送信完了は検知できず、送信後は成功として扱う。
+      const iframe = document.createElement('iframe'); iframe.name = 'gf-sink-'+Date.now(); iframe.style.display='none';
+      document.body.appendChild(iframe);
+      const form = document.createElement('form');
+      form.action = GF_ACTION; form.method = 'POST'; form.target = iframe.name; form.style.display='none';
+      Object.keys(fields).forEach(k=>{ const i=document.createElement('input'); i.type='hidden'; i.name=k; i.value=fields[k]; form.appendChild(i); });
+      document.body.appendChild(form);
+      form.submit();
+      setTimeout(()=>{ try{ form.remove(); iframe.remove(); }catch(e){} }, 5000);
+      thanks();
+    } catch(e){
+      sendBtn.disabled = false; sendBtn.textContent = '送信する';
+      errEl.textContent = '送信に失敗しました。通信環境をご確認のうえ、もう一度お試しください。';
+    }
   }
   draw();
   ov.appendChild(box); document.body.appendChild(ov);
-  ov.addEventListener('click', (e) => { if (e.target === ov) { cleanup(); ov.remove(); } });
+  ov.addEventListener('click', (e) => { if (e.target === ov) { ov.remove(); } });
 }
 function showTutorial(onClose) {
   const old = document.getElementById('tutorial-modal'); if (old) old.remove();
@@ -4463,7 +4486,7 @@ function loadPractice(idx){
   _pzClearBoard();
   P.pieces.forEach(pc=>{ board[pc[0]][pc[1]]=makePiece(pc[2],pc[3],pc[4]||null,!!pc[5]); });
   if (Array.isArray(P.walls)) {
-    P.walls.forEach(w=>{ wallPieces.push({ id: wallIdCounter++, team: w[2]||'ten', row: w[0], col: w[1], ownerKey: 'practice', fireAttr: false }); });
+    P.walls.forEach(w=>{ wallPieces.push({ id: wallIdCounter++, team: w[2]||'ten', row: w[0], col: w[1], ownerKey: 'practice' }); });
   }
   seasonIdx=(typeof P.season==='number')?P.season:0; turnCount=1; currentTeam='ten'; gamePhase='playing';
   lastJutsuPiece=null;
@@ -4801,27 +4824,32 @@ function renderManualIndex() {
     <p style="font-size:0.85rem;background:rgba(200,150,12,0.1);padding:8px 10px;border-radius:4px;">
     <b style="color:var(--gold);">勝利条件</b>：相手の「天（金）」または「冥（銀）」を倒せば勝ちです。</p>`;
 
-  // ===== 駒の説明 =====
-  html += sect('駒の説明');
+  // ===== 基本ルール =====
+  html += sect('基本ルール');
+  html += `<div style="display:flex;flex-direction:column;gap:6px;">`;
+  html += item('相性（五行）', "renderManualGogyouCommon()", 'どの駒がどの駒を倒せるか・成り', 'aisho');
+  html += item('季節とボーナス', "renderManualDetail(4)", '2ターンごとに移り変わる。術と成りの鍵', 'season');
+  html += item('自陣と敵陣', "renderManualZone()", '盤の上下3列。術・成り・打ち込みの条件になる', 'zone');
+  html += `</div>`;
+
+  // ===== 駒 =====
+  html += sect('駒');
   html += `<div style="display:flex;flex-direction:column;gap:6px;">`;
   html += item('天 / 冥（王）', "renderManualDetail(1)", '最重要の駒。倒されると負け', 'king');
   html += item('陰 / 陽', "renderManualInYou('normal')", '角と飛車の動き。相性を無視して戦う', 'inyou');
   html += item('五行駒（木・火・土・金・水）', "renderManualGogyouSelect()", '5つの属性。それぞれ動き・術・成り駒が異なる', 'gogyou');
   html += item('種駒（木・火・土・金・水）', "renderManualSeed()", '5つの属性を持つ。敵陣で五行駒に成長', 'seed');
-  html += item('合体駒（樹海・大火・焚沃・鉱山・水晶・玄極・太極）', "renderManualFusionList()", '7種類。それぞれ盤全体に効く力を持つ', 'fusion');
   html += `</div>`;
 
-  // ===== システムの説明 =====
-  html += sect('システムの説明');
+  // ===== 合体駒 =====
+  html += sect('合体駒');
   html += `<div style="display:flex;flex-direction:column;gap:6px;">`;
-  html += item('相性（五行）', "renderManualGogyouCommon()", 'どの駒がどの駒を倒せるか・成り', 'aisho');
   html += item('合体の仕組み', "renderManualDetail(3)", '作り方・巻き込んだ駒・持続と破壊', 'fusion');
-  html += item('季節とボーナス', "renderManualDetail(4)", '2ターンごとに移り変わる。術と成りの鍵', 'season');
-  html += item('自陣と敵陣', "renderManualZone()", '盤の上下3列。術・成り・打ち込みの条件になる', 'zone');
+  html += item('合体駒（樹海・大火・焚沃・鉱山・水晶・玄極・太極）', "renderManualFusionList()", '7種類。それぞれの効果を見る', 'fusion');
   html += `</div>`;
 
-  // ===== そのほか =====
-  html += sect('そのほか');
+  // ===== その他のルール =====
+  html += sect('その他のルール');
   html += `<div style="display:flex;flex-direction:column;gap:6px;">`;
   html += item('術のルール', "renderManualDetail(5)", '発動の条件と共通ルール');
   html += item('持ち駒と禁じ手', "renderManualDetail(6)", '奪った駒の打ち直し・二歩・打ち歩詰め');
@@ -5067,13 +5095,77 @@ function kekkaiEffectText(name, ownerTeam) {
   switch (name) {
     case '樹海': return `⚠️ ${foe}のターンがスキップされた！<br>周囲に壁が茂った`;
     case '大火': return `⚠️ 隣接する${foe}の駒を焼き払った！`;
-    case '焚沃': return `✨ ${own}の種駒が新たに芽吹いた！`;
-    case '鉱山': return `⚠️ ${own}の駒がこのターン、相性を無視して戦える！`;
+    case '焚沃': return `✨ ${own}の種駒が持ち駒に加わった！`;
+    case '鉱山': return `✨ ${own}の駒がこのターン、相性を無視して戦える！`;
     case '水晶': return `⚠️ ${foe}の駒が操られた！`;
     case '玄極': return `⚠️ ${foe}の駒がひとつ前の姿に戻された！`;
     case '太極': return `✨ ${own}の駒がひとつ成った！`;
     default:     return '結界の力が働いた！';
   }
+}
+// 表示中の結界吹き出し（同時発動で重ならないよう互いを避ける）
+let kekkaiBubbleEls = [];
+function kekkaiRectsOverlap(a, b) {
+  const g = 4; // 少し余白をとって隣接も重なり扱い
+  return !(a.right + g <= b.left || a.left - g >= b.right || a.bottom + g <= b.top || a.top - g >= b.bottom);
+}
+// 2×2の左上マスを起点に吹き出しを出す。中央合わせ→画面端クランプ→重なり回避まで面倒を見る。
+function showKekkaiBubble(cell, boardEl, name, col, below) {
+  const bub = document.createElement('div');
+  bub.className = 'kekkai-bubble' + (below ? ' below' : '');
+  bub.style.setProperty('--kekkai-color', col);
+  bub.innerHTML = `<span class="kb-name">${name}</span>${kekkaiEffectText(name, cellOwnerName(name))}`;
+  // 左上マスの右端(=2×2の中央)を基準に。CSSのtransform:translateX(-50%)で中央合わせ。
+  bub.style.left = '100%';
+  cell.appendChild(bub);
+
+  // 実寸は offsetWidth/Height で取る（アニメの拡大縮小=transform の影響を受けない）。
+  const bw = bub.offsetWidth, bh = bub.offsetHeight;
+  const board = boardEl.getBoundingClientRect();
+  const cr = cell.getBoundingClientRect();
+  const m = 6; // 盤の内側にとる最小マージン
+  // ずらさないときの本体中心は「左上マスの右端」= cr.right
+  const centerX = cr.right;
+  let shift = 0; // 本体を右(+)/左(-)へずらす量(px)
+  if (centerX - bw / 2 < board.left + m) shift = (board.left + m) - (centerX - bw / 2);
+  else if (centerX + bw / 2 > board.right - m) shift = (board.right - m) - (centerX + bw / 2);
+  if (shift !== 0) bub.style.left = `calc(100% + ${Math.round(shift)}px)`;
+  // 尻尾は結界の中心(=ずらす前の位置)を指したまま。本体内での位置に直す。
+  let tailX = Math.max(10, Math.min(bw - 10, bw / 2 - shift));
+  bub.style.setProperty('--tail-x', `${Math.round(tailX)}px`);
+
+  // 本体の矩形を自前で組む（transform の影響を受けない実寸ベース）。
+  const boxLeft = centerX + shift - bw / 2, boxRight = boxLeft + bw;
+  // 重なり回避：既存の吹き出しと被るなら、被らなくなるまで上(下向きなら下)へ逃がす
+  let extra = 0, guard = 0;
+  const boxOf = (ex) => below
+    ? { left: boxLeft, right: boxRight, top: cr.bottom + 10 + ex, bottom: cr.bottom + 10 + bh + ex }
+    : { left: boxLeft, right: boxRight, top: cr.top - 10 - bh - ex, bottom: cr.top - 10 - ex };
+  while (guard++ < 6) {
+    const me = boxOf(extra);
+    const hit = kekkaiBubbleEls.find(o => o.isConnected && o._box && kekkaiRectsOverlap(me, o._box));
+    if (!hit) break;
+    extra += (below ? (hit._box.bottom - me.top) : (me.bottom - hit._box.top)) + 8;
+  }
+  if (extra > 0) {
+    if (below) bub.style.top = `calc(100% + 10px + ${Math.round(extra)}px)`;
+    else bub.style.bottom = `calc(100% + 10px + ${Math.round(extra)}px)`;
+  }
+  bub._box = boxOf(extra);
+
+  kekkaiBubbleEls.push(bub);
+  setTimeout(() => {
+    bub.remove();
+    const i = kekkaiBubbleEls.indexOf(bub);
+    if (i >= 0) kekkaiBubbleEls.splice(i, 1);
+  }, 2500);
+}
+// 効果文の「自分/相手」表示に使う、結界の持ち主陣営を名前から引く
+function cellOwnerName(name) {
+  for (const t of ['ten', 'mei']) {
+    if ((fusionPieces[t] || []).some(x => x.name === name)) return t;
+  }
+  return 'ten';
 }
 // 結界（合体駒）の効果発動を盤上で示す：その合体駒を輝かせ、波紋を広げる
 function flashKekkai(name) {
@@ -5111,15 +5203,10 @@ function flashKekkai(name) {
       rip.className = 'kekkai-ripple';
       rip.style.borderColor = col;
       cell.appendChild(rip);
-      // 吹き出しは2×2の上段中央あたりに1つだけ出す（何が起きたかを文で伝える）
-      if (r === target.topRow && c === target.leftCol + 1) {
-        const bub = document.createElement('div');
-        // 盤の上のほうにある結界は、吹き出しを下向きに出す（画面外へ出ないように）
-        bub.className = 'kekkai-bubble' + (target.topRow <= 1 ? ' below' : '');
-        bub.style.setProperty('--kekkai-color', col);
-        bub.innerHTML = `<span class="kb-name">${name}</span>${kekkaiEffectText(name, target.team)}`;
-        cell.appendChild(bub);
-        setTimeout(() => bub.remove(), 2500);
+      // 吹き出しは2×2の左上マスを起点にして「2×2の中央」に1つだけ出す。
+      // （起点を左上に固定し、left:100% でちょうど2列の境界＝中央に合わせる）
+      if (r === target.topRow && c === target.leftCol) {
+        showKekkaiBubble(cell, boardEl, name, col, target.topRow <= 1);
       }
       setTimeout(() => rip.remove(), 950);
     });
@@ -5140,7 +5227,9 @@ function showEffectBanner(kind, name) {
     const fusionNames = ['樹海','大火','焚沃','鉱山','水晶','玄極','太極'];
     if (fusionNames.includes(name) && !fusionBirthBanner) {
       logFusionEffect(name);
-      flashKekkai(name); // 盤上でその結界を輝かせる
+      // 演出はこの直後の renderBoard() で盤ごと消えてしまうため、再描画後に回す。
+      const _n = name;
+      setTimeout(() => flashKekkai(_n), 0); // 盤上でその結界を輝かせる
     }
   }
   const old = document.getElementById('effect-banner');
@@ -5154,7 +5243,7 @@ function showEffectBanner(kind, name) {
   banner.style.cssText = `position:fixed; top:0; left:0; right:0; z-index:2000; display:flex; align-items:center; justify-content:center; gap:14px; padding:12px 18px; background:linear-gradient(90deg, rgba(20,12,6,0) 0%, rgba(20,12,6,0.96) 20%, rgba(20,12,6,0.96) 80%, rgba(20,12,6,0) 100%); border-bottom:2px solid ${accent}; box-shadow:0 4px 24px ${accent}55; transform:translateY(-120%); transition:transform 0.32s cubic-bezier(0.2,0.8,0.3,1); pointer-events:none;`;
   // 結界のときは効果の要点も一行添える（何が起きたのか分かるように）
   const KEKKAI_SHORT = {
-    '樹海':'相手のターンを奪い、壁が茂る', '大火':'隣接する敵を焼く', '焚沃':'種駒が芽吹く',
+    '樹海':'相手のターンを奪い、壁が茂る', '大火':'隣接する敵を焼く', '焚沃':'種駒が持ち駒に加わる',
     '鉱山':'相性を無視して戦える', '水晶':'相手の駒を操る',
     '玄極':'相手の駒をひとつ前の姿へ', '太極':'味方を1つ成らせる',
   };
@@ -5684,6 +5773,7 @@ function renderBoard() {
       if (jutsuDangerMap && jutsuDangerMap[r+','+c]) cell.classList.add('jutsu-danger'); // 術で王が倒される危険マス
       if (jutsuDangerMap && jutsuDangerSrc[r+','+c]) cell.classList.add('jutsu-threat-src'); // その脅威を出している敵駒
       if (suishouSelectCells.some(([sr,sc])=>sr===r&&sc===c)) cell.classList.add('suishou-select');
+      if (taikyokuGrantAvailable===currentTeam && taikyokuCandidates.some(([tr,tc])=>tr===r&&tc===c)) cell.classList.add('taikyoku-cand');
       if (previewCell && previewCell[0]===r && previewCell[1]===c) cell.classList.add('preview-piece');
       if (previewMoveCells.some(([pr,pc])=>pr===r&&pc===c)) cell.classList.add('preview-move');
       if (previewCapCells.some(([pr,pc])=>pr===r&&pc===c)) cell.classList.add('preview-cap');
@@ -6351,6 +6441,10 @@ function startGame() {
   capturedPlacedCount = { ten: 0, mei: 0 }; pendingCaptureChoice = null;
   fusionPieces = { ten: [], mei: [] }; lastFusionSeasonIdx = { ten: null, mei: null };
   fusionFlowState = null; fusionBaseSelect = null; taikyokuLastGrant = { ten: null, mei: null };
+  // 前局の凍結・クールダウン・マーキングが持ち越されないよう明示的にリセット（再戦時のバグ対策）
+  frozenPieces = { ten:null, mei:null };
+  lastFreezeCastTurn = { ten:-999, mei:-999 }; lastUzuCastTurn = { ten:-999, mei:-999 };
+  kirinMark = { ten:null, mei:null };
   lastMove = null;
   initBoard();
   document.getElementById('setup-screen').style.display = 'none';
@@ -6498,7 +6592,7 @@ function executeMove(sr, sc, row, col, selPiece) {
     }
   }
   // 壁チェック
-  checkWallCapture(row, col, selPiece);
+  checkWallCapture(row, col);
   if (selPiece.type === 'tane') selPiece.hasMoved = true;
   board[row][col] = selPiece; board[sr][sc] = null;
   selectedCell = null;
@@ -6771,7 +6865,8 @@ function onCellClick(row, col) {
 
   // 太極：成り付与（自分の駒をタップで成らせる）
   if (taikyokuGrantAvailable === currentTeam) {
-    if (piece && piece.team===currentTeam && !piece.promoted &&
+    const isCand = taikyokuCandidates.some(([r,c]) => r===row && c===col);
+    if (piece && piece.team===currentTeam && !piece.promoted && isCand &&
         (piece.type==='gogyou'||piece.type==='in'||piece.type==='you'||piece.type==='tane')) {
       if (piece.type==='tane') {
         board[row][col] = makePiece('gogyou', piece.team, piece.attr);
@@ -6789,6 +6884,7 @@ function onCellClick(row, col) {
         }
       }
       taikyokuGrantAvailable = null;
+      taikyokuCandidates = [];
       renderBoard();
       flashEffect([[row,col]],'buff','成');
     }
@@ -8387,17 +8483,15 @@ function aiSpeedDelay() {
 
 // AI: 太極の成り付与を処理（自分の未成り駒を1つ成らせる）
 function aiHandleTaikyoku(team) {
-  const candidates = [];
-  for (let r=0;r<9;r++) for (let c=0;c<9;c++) {
+  // 太極は隣接する自駒のみが対象（発動時に taikyokuCandidates に格納済み）。
+  const candidates = taikyokuCandidates.filter(([r,c]) => {
     const p = board[r][c];
-    if (p && p.team===team && !p.promoted &&
-        (p.type==='gogyou'||p.type==='in'||p.type==='you'||p.type==='tane')) {
-      // 同種の五神／暗黒竜／耀白龍が既に盤上にいる駒は成れないので、太極を無駄撃ちしない
-      if (p.type!=='tane' && !canPromoteKind(p)) continue;
-      candidates.push([r,c]);
-    }
-  }
-  if (candidates.length===0) { taikyokuGrantAvailable = null; return; }
+    if (!p || p.team!==team || p.promoted) return false;
+    if (!(p.type==='gogyou'||p.type==='in'||p.type==='you'||p.type==='tane')) return false;
+    if (p.type!=='tane' && !canPromoteKind(p)) return false;
+    return true;
+  });
+  if (candidates.length===0) { taikyokuGrantAvailable = null; taikyokuCandidates = []; return; }
   // 価値の高い駒（陰陽>五行>種）を優先
   candidates.sort((a,b) => aiPieceValue(board[b[0]][b[1]]) - aiPieceValue(board[a[0]][a[1]]));
   const [r,c] = candidates[0];
@@ -8423,6 +8517,7 @@ function aiHandleTaikyoku(team) {
     }
   }
   taikyokuGrantAvailable = null;
+  taikyokuCandidates = [];
   setLog(`太極の力！${getPieceName(board[r][c])}が成った！`);
   renderBoard();
   flashEffect([[r,c]],'buff','成');
@@ -8569,18 +8664,23 @@ function aiPositionEval(bd, team){
   // 「王手をかける」こと自体は加点しない（単騎で王手→逃げられる の無限反復を招くため）。
   // 代わりに「複数の駒で王を囲む」「王の逃げ道を減らす」局面を高く評価し、詰みの網を作らせる。
   if(foeKr>=0){
-    // 攻め駒が敵王の近くに2枚以上あるときだけ計算する（探索コスト削減）。
-    // 1枚しかいない局面では連携も封鎖も成立せず、計算する意味がない。
+    // 終盤ほど「詰め」を強く意識する。駒が少ない/手数が進んだ局面では寄せの網を厳しく評価し、
+    // 150手到達（グダり）ではなく王を実際に取り切る筋を選ばせる。
+    var pcTotal=0, myPc=0, foePc=0; for(var pr=0;pr<9;pr++)for(var pcc=0;pcc<9;pcc++){ var qq=bd[pr][pcc]; if(qq){ pcTotal++; if(qq.team===team)myPc++; else foePc++; } }
+    var endgame = pcTotal <= 16;
+    var leading = (myPc - foePc) >= 2;   // 明確な駒得（終盤の詰め切り判断用）
+    // 90手以降、手数が進むほど寄せ・詰めを強める（1.0→2.0倍。長引くほど決着を急ぐ）
+    var lateUrg = (typeof turnCount!=='undefined' && turnCount>=90) ? 1.0 + Math.min(1.0,(turnCount-90)/50) : 1.0;
+    // 攻め駒が敵王の近くに何枚あるか（探索コスト削減の足切り）
     var nearCount=0;
     for(var ar=0;ar<9;ar++)for(var ac=0;ac<9;ac++){
       var ap=bd[ar][ac];
       if(ap && ap.team===team && ap.type!==team && Math.abs(ar-foeKr)+Math.abs(ac-foeKc)<=3) nearCount++;
     }
-    var nearAttack = (nearCount>=2);
+    // 終盤は単騎の寄せも詰めに直結するので閾値を1に緩める（駒が少なく計算も軽い）。
+    var nearAttack = endgame ? (nearCount>=1) : (nearCount>=2);
     if(nearAttack){
-      // 高速化：全自駒ではなく「敵王の近く（距離4以内）の自駒」だけ利きを計算する。
-      // 遠方の駒は寄せの主力にならないため、精度の損失より探索速度を優先する。
-      // （全駒走査だと探索の末端ごとに10〜15回のgetMovesが走り、AIの思考が目に見えて重くなる）
+      // 高速化：敵王の近く（距離4以内）の自駒だけ利きを計算する。
       var myAtk={}, attackers=0;
       for(var mr=0;mr<9;mr++)for(var mc=0;mc<9;mc++){
         var mp=bd[mr][mc];
@@ -8595,8 +8695,8 @@ function aiPositionEval(bd, team){
         }
         if(touches && mp.type!==team) attackers++;   // 王とその周囲に利いている攻め駒の数
       }
-      // 単騎の寄せは薄く、2体以上の連携で大きく加点＝「もう1枚足してから踏み込む」筋を選ばせる
-      if(attackers===1) s += 6;
+      // 連携加点（終盤は単騎でもやや厚めに）
+      if(attackers===1) s += endgame ? 16 : 6;
       else if(attackers>=2) s += 70 + (attackers-2)*45;
       // 逃げ道封鎖：敵王が逃げられるマスが少ないほど加点
       var escapes=0;
@@ -8609,8 +8709,19 @@ function aiPositionEval(bd, team){
         if(myAtk[er2+","+ec2]) continue;              // こちらの利きがある＝逃げられない
         escapes++;
       }
-      s += (8-escapes)*9;                             // 逃げ道を潰すほど加点
-      if(attackers>=2 && escapes===0) s += 500;       // 包囲完成＝決定的
+      // 王そのものに利いている＝次の手で取れる（＝詰めろに近い）
+      var kingHit = myAtk[foeKr+","+foeKc] ? 1 : 0;
+      s += (8-escapes)*9*lateUrg;                     // 逃げ道を潰すほど加点（終盤ほど強く）
+      if(escapes<=1) s += 40*lateUrg;                 // 逃げ場ほぼ無し＝寄り形
+      if(attackers>=2 && escapes===0) s += 500*lateUrg;   // 包囲完成
+      // 王に利き＋逃げ場が無い/わずか＝ほぼ詰み。単騎でも成立するので終盤の取り切りに効く。
+      if(kingHit && escapes===0) s += 800*lateUrg;    // 次に王を取れて逃げ場ゼロ＝決定的（王価値1000未満に抑え、実際の王取りを上回らせない）
+      else if(kingHit && escapes<=1) s += 220*lateUrg;
+    }
+    // 駒得の終盤は、敵王を盤の端・隅へ追い込む（端ほど逃げ場が減り囲みやすい＝大差を詰めに変える）。
+    if(endgame && leading){
+      var edgeDist = Math.min(foeKr, 8-foeKr, foeKc, 8-foeKc); // 0=端, 4=中央
+      s += (4-edgeDist)*10*lateUrg;
     }
   }
   // === A. 合体駒と壁を評価する（探索盤には無いが、実際の盤の状態を参照する）===
@@ -8749,6 +8860,27 @@ function aiNegamax(bd, team, depth, alpha, beta){
   return best;
 }
 
+// 大駒を「見返り無く・取り返しも効かない位置」へ動かすタダ捨てか。
+// 王の移動・王取り・合体駒破壊・軽い駒(価値<5)・ほぼ釣り合う取引は対象外＝前進や正当な取引は止めない。
+// 王手回避で他に手が無い場合は、呼び出し側が「非タダ捨てが1つも無ければ従来通り最善を返す」ので、
+// 強制的にタダ捨てさせられる局面でも詰まらない。
+function aiIsFreeSacrifice(mv, team){
+  const piece = board[mv.fromR] && board[mv.fromR][mv.fromC];
+  if(!piece || piece.type===team) return false;            // 王の移動は別評価
+  const foe = team==='ten' ? 'mei' : 'ten';
+  const target = board[mv.toR][mv.toC];
+  if(target && (target.type==='ten'||target.type==='mei')) return false; // 王を取る手は捨てではない
+  const myVal = aiPieceValue(piece);
+  if(myVal < 5) return false;                              // 種など軽い駒は前進を止めない
+  let capVal = (target && target.team===foe) ? aiPieceValue(target) : 0;
+  try { const fz = getFusionAt(mv.toR, mv.toC); if(fz && fz.team===foe) capVal += 40; } catch(e){} // 合体駒破壊は見返り
+  if(capVal >= myVal - 3) return false;                    // ほぼ釣り合う取引は捨てではない
+  const danger = aiSquareAttackedBy(mv.toR, mv.toC, foe, mv);
+  if(!danger) return false;                                // 取られない位置なら問題なし
+  const defended = aiSquareAttackedBy(mv.toR, mv.toC, team, mv);
+  if(defended) return false;                               // 取り返せる＝真のタダ捨てではない
+  return true;
+}
 function aiChooseMove(moves, team) {
   // 王を取れる手があれば、評価を待たずに即座に選ぶ（＝その手で勝ちが確定するため）。
   // 以前は aiEvalMove のスコア（+100000）で判定していたが、
@@ -8774,7 +8906,20 @@ function aiChooseMove(moves, team) {
     scored.sort((a,b)=>b.s-a.s);
     const cand = scored.slice(0, Math.min(14, scored.length));
     const enemy = team==='ten' ? 'mei' : 'ten';
+    // 選択的深化：勝勢の終盤だけ読みを深める。逃げ回る王を隅へ運ぶ手順（3〜4手先の捕獲）は
+    // 通常の深さ3では地平線の向こうで見えないため、駒得の終盤に限って深くして詰め切らせる。
+    // 終盤は駒が少なく枝が細いので、深くしても時間ガード内に収まりやすい。
+    let searchDepth = HARD_DEPTH;
+    { var _pc=0, _my=0, _fo=0;
+      for(var _r=0;_r<9;_r++)for(var _c=0;_c<9;_c++){ var _q=board[_r][_c]; if(_q){ _pc++; var _v=aiPieceValue(_q); if(_q.team===team)_my+=_v; else _fo+=_v; } }
+      var _lead=_my-_fo;
+      if(_lead>=4){
+        if(_pc<=12) searchDepth = HARD_DEPTH+2;      // 終盤×明確な駒得＝合計6手読み
+        else if(_pc<=16) searchDepth = HARD_DEPTH+1; // 準終盤＝合計5手読み
+      }
+    }
     let best = cand[0].mv, bestV = -Infinity;
+    const evald = []; // 安全網用：評価済みの候補と探索値を控える
     // 思考時間の上限ガード：重い局面でも固まらないよう、一定時間を超えたら
     // それ以降の候補は打ち切る。候補は有望順に並んでいるので早期停止でも安全。
     const _t0 = (typeof performance!=='undefined' && performance.now) ? performance.now() : Date.now();
@@ -8796,17 +8941,32 @@ function aiChooseMove(moves, team) {
       } catch(e) {}
       // 子探索はαβ全窓（-∞,∞）で呼ぶ＝各候補を公平に評価し、選択挙動は従来と一致。
       // 内部のαβ・並べ替えで高速化した分を深さ3（合計4手読み）に充てる。
-      const v = -aiNegamax(aiCloneApply(board, m), enemy, HARD_DEPTH, -Infinity, Infinity) + 0.02*x.s + fusBonus; // 位置的タイブレーク＋合体駒補正
+      const v = -aiNegamax(aiCloneApply(board, m), enemy, searchDepth, -Infinity, Infinity) + 0.02*x.s + fusBonus; // 位置的タイブレーク＋合体駒補正
+      evald.push({ mv: m, v });
       if (v > bestV) { bestV = v; best = m; }
       const _el = ((typeof performance!=='undefined' && performance.now) ? performance.now() : Date.now()) - _t0;
       if (_el > TIME_BUDGET_MS) break;
     }
+    // 【安全網】最善手が大駒のタダ捨てなら、評価済みの中からタダ捨てでない最良手へ差し替える。
+    // 評価が発展・寄せ・季節加点でタダ捨てを過大評価してしまうケースの最後の歯止め。
+    // 非タダ捨ての候補が1つも無い（＝強制）ときは従来通り best を返す。
+    if (aiIsFreeSacrifice(best, team)) {
+      let alt = null, altV = -Infinity;
+      for (const e of evald) {
+        if (e.mv === best) continue;
+        if (!aiIsFreeSacrifice(e.mv, team) && e.v > altV) { altV = e.v; alt = e.mv; }
+      }
+      if (alt) return alt;
+    }
     return best;
   }
-  // normal：最善手（同点はランダム）
+  // normal：最善手（同点はランダム）。ただし大駒のタダ捨ては安全網で避ける。
   scored.sort((a,b)=>b.s-a.s);
-  const bestS = scored[0].s;
-  const ties = scored.filter(x => x.s === bestS);
+  const topN = scored.slice(0, Math.min(14, scored.length));
+  const nonSac = topN.filter(x => !aiIsFreeSacrifice(x.mv, team));
+  const pool = nonSac.length ? nonSac : topN; // 非タダ捨てが無ければ従来通り
+  const bestS = pool[0].s;
+  const ties = pool.filter(x => x.s === bestS);
   return ties[Math.floor(Math.random()*ties.length)].mv;
 }
 
@@ -9698,15 +9858,21 @@ function aiDoBonus(br, bc) {
       return;
     }
   }
-  let pick = null, bestSc = -Infinity;
+  const bonusCands = [];
   for (const [tr, tc] of all) {
     const mv = { fromR:br, fromC:bc, toR:tr, toC:tc, kind:(board[tr][tc]?'capture':'move'), piece:p };
     let sc;
     try { sc = aiEvalMove(mv); } catch(e) { sc = 0; }
     // 直前の本移動で出発したマスへ戻る＝前進を打ち消す無意味な手。強く避ける。
     if (lastMv && lastMv.key===aiPieceKey(p) && lastMv.fromR===tr && lastMv.fromC===tc) sc -= 2000;
-    if (sc > bestSc) { bestSc = sc; pick = [tr, tc]; }
+    bonusCands.push({ tr, tc, mv, sc });
   }
+  bonusCands.sort((a,b)=>b.sc-a.sc);
+  // 【安全網】大駒のタダ捨てになるボーナス移動は避け、非タダ捨てを優先（全滅時のみ従来通り）。
+  const bonusNonSac = bonusCands.filter(c => !aiIsFreeSacrifice(c.mv, team));
+  const bonusPool = bonusNonSac.length ? bonusNonSac : bonusCands;
+  let pick = bonusPool.length ? [bonusPool[0].tr, bonusPool[0].tc] : null;
+  let bestSc = bonusPool.length ? bonusPool[0].sc : -Infinity;
   if (!pick) pick = all[0];
   // 良い手が無い（全て自陣へ後退するだけ等）ならボーナスを使わずに手番を終える
   if (bestSc <= -1500) { bonusPiece=null; actionPhase='main'; setLog('季節ボーナスは見送った'); renderBoard(); nextTurn(); return; }
@@ -9773,7 +9939,7 @@ function applyUndoSnapshot(s) {
   selectedCell = null; actionMode = 'move'; actionPhase = 'main'; bonusPiece = null;
   wallPlaceMode = false; ryuMoveState = null; genbuMoveState = null; hiMoveState = null;
   fusionFlowState = null; fusionBaseSelect = null; suishouActive = null; suishouMoveState = null;
-  taikyokuGrantAvailable = null; genkyokuMuAvailable = null; kirinMarkMode = null; tsuchiAppearMode = null;
+  taikyokuGrantAvailable = null; taikyokuCandidates = []; genkyokuMuAvailable = null; kirinMarkMode = null; tsuchiAppearMode = null;
   capturedSelectedIdx = null; pendingCaptureChoice = null; aiThinking = false;
   lastMove = s.__lastMove || null;
   renderBoard(); renderCapturedPanel(); updateUI();
@@ -10052,7 +10218,7 @@ function startDebugMode() {
   actionPhase = 'main'; selectedCell = null; bonusPiece = null;
   actionMode = 'move'; wallPlaceMode = false; ryuMoveState = null;
   board = Array.from({length:9}, () => Array(9).fill(null));
-  wallPieces = []; wallDestroyCount = {}; wallPlaceMode = false;
+  wallPieces = []; wallPlaceMode = false;
   wallPlaceOrigin = null;
   hiddenTsuchi = []; tsuchiBurrowCount = {}; tsuchiAppearMode = null;
   kirinMark = {}; kirinMarkMode = null;
@@ -10591,7 +10757,7 @@ function onlineApplyState(s) {
   selectedCell = null; actionMode = 'move'; actionPhase = 'main'; bonusPiece = null;
   wallPlaceMode = false; ryuMoveState = null; genbuMoveState = null; hiMoveState = null;
   fusionFlowState = null; fusionBaseSelect = null; suishouActive = null; suishouMoveState = null;
-  taikyokuGrantAvailable = null; genkyokuMuAvailable = null; kirinMarkMode = null; tsuchiAppearMode = null;
+  taikyokuGrantAvailable = null; taikyokuCandidates = []; genkyokuMuAvailable = null; kirinMarkMode = null; tsuchiAppearMode = null;
   renderBoard(); updateUI();
   // 試合終了が届いたらログを表示（onlineApplying中なので、ここでの送信は走らない）
   if (gamePhase === 'end') {
