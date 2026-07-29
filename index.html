@@ -739,6 +739,8 @@
   /* 水晶：操作できる敵駒／選択中の駒（青紫で明滅） */
   .cell.suishou-select { animation: suishouPulse 1s ease-in-out infinite; cursor:pointer; z-index:2; }
   .cell.taikyoku-cand { animation: taikyokuPulse 0.9s ease-in-out infinite; cursor:pointer; z-index:2; }
+  .cell.dorui-guard { box-shadow: inset 0 0 0 3px rgba(200,170,90,0.85), inset 0 0 10px 2px rgba(210,180,100,0.5); }
+  .cell.dorui-guard::after { content:'守'; position:absolute; top:1px; right:2px; font-size:0.6rem; color:#f0dca0; text-shadow:0 0 3px #000; z-index:3; pointer-events:none; }
   @keyframes taikyokuPulse { 0%,100%{ box-shadow: inset 0 0 0 2px rgba(255,255,255,0.55); } 50%{ box-shadow: inset 0 0 9px 3px rgba(255,255,255,0.98); } }
   .ff-btn { font-size:0.72rem; padding:3px 9px; margin:2px 3px 2px 0; border-radius:12px; border:1px solid rgba(212,184,48,0.5); background:rgba(255,255,255,0.05); color:var(--washi); cursor:pointer; }
   .ff-btn.ff-active { background:linear-gradient(160deg, rgba(212,184,48,0.4), rgba(160,130,30,0.3)); color:#ffe9a8; border-color:var(--gold); }
@@ -2152,7 +2154,7 @@ function triggerFusionTurnStart(team) {
         capturedPieces[team].push(makePiece('tane', team, attrs[Math.floor(Math.random()*5)], false));
         showEffectBanner('結界','焚沃');
         setLog('焚沃の力！種駒が持ち駒に加わった！');
-        flashEffect([[f.topRow, f.leftCol]],'create','芽'); // 合体駒の位置で芽吹きを示す
+        // 種は持ち駒に入るため、盤上（焚沃のマス）には芽吹き演出を出さない（結界の光＋吹き出しで通知）。
       }
     } else if (f.name === '太極') {
       // 次の次の自分のターンごとに、隣接する自分の駒を1つ成らせられる（盤全体→周辺に限定）
@@ -3018,6 +3020,8 @@ function getBonusMoves(piece, row, col, board) {
 // 取れるか判定
 // ============================================================
 function canCapture(attacker, defender) {
+  // 土塁：守り中の駒は相手の次の手番のあいだ捕獲されない（相性系の捕獲を中枢で一括ブロック）
+  if (defender.guardUntil && turnCount < defender.guardUntil) return false;
   // 無駒：王・陰陽（無属性駒）のみが倒せる。それ以外では倒せない
   if (defender.type==='mu') {
     return ['ten','mei','in','you'].includes(attacker.type);
@@ -3157,8 +3161,8 @@ function getMoves(piece, row, col, board) {
     addMove(row+dir,   col-2); addMove(row+dir,   col+2); // 前1・横2（ナイトの広い跳び）
     addMove(row+dir,   col);                              // 前進1マス（跳ばない前進）
   } else if (type==='gogyou' && attr==='土' && !promoted) {
-    // 土：横1列全体（障害物で止まる）＋前1マス＋後1マス
-    slide(0, 1); slide(0, -1);
+    // 土：横1列を「常時すり抜け（潜伏）」で移動＝味方をすり抜け、倒せない敵・壁・合体駒の手前で停止（麒麟と同じ）。前後1マス。
+    phaseSlide(0, 1); phaseSlide(0, -1);
     addMove(row+dir, col);
     addMove(row-dir, col);
   } else if (type==='gogyou' && attr==='土' && promoted) {
@@ -3206,7 +3210,7 @@ function getMoves(piece, row, col, board) {
         if (fz) { if (genbuCanDefeatFusion(fz, team)) captures.push([nr,nc]); continue; }
         const t = board[nr][nc];
         if (!t) moves.push([nr,nc]);
-        else if (t.team!==team && genbuCanDefeat(t)) captures.push([nr,nc]);
+        else if (t.team!==team && genbuCanDefeat(t, team)) captures.push([nr,nc]);
       }
     }
   } else if (type==='gogyou' && attr==='木' && promoted) {
@@ -3670,16 +3674,16 @@ const MANUAL_ATTRS = {
     promote:'夏に「炎溜め」を使うと成れます（任意）。',
   },
   '土': {
-    title:'土', catch:'潜って、待つ',
-    move:'左右は端まで、前後は1マスずつ動けます。',
-    jutsu:{ name:'潜伏', text:`地中に潜り、次の自分の番に出現します。出現できるのは${mKey('もといた場所の左右と、前1マス')}です。` },
+    title:'土', catch:'すり抜けて守る',
+    move:'左右は端まで動けます（<b>潜伏</b>：味方をすり抜け、倒せない敵・壁・合体駒の手前で止まります）。前後は1マスずつ。すり抜け移動はターンを消費しません（通常の移動です）。',
+    jutsu:{ name:'土塁', text:`${mKey('自分と隣接する味方すべて')}に守りを付与し、相手の次の手番のあいだ取られなくします（1ターンで消滅）。大火・大暴発など相性無視の破壊は防げません。` },
     jutsuList:[
-      { mark:'①', title:'味方の下は通れる', text:'味方の駒の下をくぐって、その先へ出現できます。' },
-      { mark:'②', title:'倒せない敵は越えられない', text:'木・金など倒せない敵と、壁・合体駒の手前で止まります。倒せる敵の位置に出現すれば、その駒を倒せます。' },
+      { mark:'①', title:'面で守る（1ターン）', text:'土自身と、隣接する味方すべてに守りを付け、相手の次の手番のあいだ取られなくします。自分の次の番で自然に消えます。' },
+      { mark:'②', title:'万能ではない', text:'大火・大暴発など「相性を無視する破壊」は防げません。通常の捕獲を止める守りです。' },
     ],
     goshin:{ name:'麒麟', move:'左右へ長く動けます。味方はすり抜けられますが、倒せない敵と壁・合体駒の手前では止まります。前後は1マス。',
              jutsu:'味方の駒1つに印をつけ、その駒と位置を入れ替えます。印は土用に付け替えられます。' },
-    promote:'土用に「潜伏」を使うと成れます（任意）。',
+    promote:'土用に「土塁」を使うと成れます（任意）。',
   },
   '金': {
     title:'金', catch:'正面から、断つ',
@@ -4147,7 +4151,7 @@ const TUTORIAL_PAGES = [
       _lbl(163,102,'自陣')+
       _tk(109,67,'#3f8f6f','木','#fff',13,0.52)+
       `<text x="128" y="60" font-size="14" text-anchor="middle" fill="#ffd24a">✦</text>`),
-    h:'五行駒を<b>自陣の外</b>へ進めると、属性ごとの術が使えます。<br>壁作成（木）・渦（水）・金剛力（金）・潜伏（土）・炎溜め（火）。効果が出た駒は光って知らせます。' },
+    h:'五行駒を<b>自陣の外</b>へ進めると、属性ごとの術が使えます。<br>壁作成（木）・渦（水）・金剛力（金）・土塁（土）・炎溜め（火）。効果が出た駒は光って知らせます。' },
   { t:'成り（五神駒）', svg:_svgWrap('300 112',
       _tk(52,50,'#3f8f6f','木','#fff')+_lbl(52,90,'五行駒')+
       _arw(80,48,150,48)+
@@ -4452,8 +4456,8 @@ const PRACTICE_STAGES = [
   { title:'火の術：炎溜めと暴発', season:0,
     desc:'火を選んで「術（炎溜め）」を使うと炎を溜め、6ターンの時限が始まります。0になると強制「大暴発」で周囲を相性無視・敵味方問わず吹き飛ばします。動かせば炎を消費して跳べえ、味方は巻き込みません。どちらも火駒自身は消滅します。',
     pieces:[ [4,4,'gogyou','ten','火'], [2,3,'gogyou','mei','木'], [2,5,'gogyou','mei','金'], [6,3,'gogyou','mei','金'] ] },
-  { title:'土の術：潜伏', season:0,
-    desc:'土を選んで「術（潜伏）」を使うと、土が地中に潜みます。次の自分のターン開始時にポップアップが出て、出現場所を選んで現れます。このとき、間にある他の駒を無視して遠くのマスを選んだり、倒せる駒があれば直接そこに出現して倒せます。',
+  { title:'土の術：土塁', season:0,
+    desc:'土は移動そのものが「潜伏」で、味方をすり抜けて横一列を進めます（術ではなく通常移動）。術（土塁）を使うと、土自身と隣接する味方すべてに守りが付き、相手の次の手番のあいだ取られなくなります。土を選び「術（土塁）」を押すだけで発動します。',
     pieces:[ [4,4,'gogyou','ten','土'], [3,4,'gogyou','mei','水'] ] },
   { title:'金の術：金剛力', season:0,
     desc:'金を選んで「術（金剛力）」を使うと、前方2マスの敵に力を振るいます。前方の敵を狙ってみましょう。',
@@ -5774,6 +5778,7 @@ function renderBoard() {
       if (jutsuDangerMap && jutsuDangerSrc[r+','+c]) cell.classList.add('jutsu-threat-src'); // その脅威を出している敵駒
       if (suishouSelectCells.some(([sr,sc])=>sr===r&&sc===c)) cell.classList.add('suishou-select');
       if (taikyokuGrantAvailable===currentTeam && taikyokuCandidates.some(([tr,tc])=>tr===r&&tc===c)) cell.classList.add('taikyoku-cand');
+      if (board[r][c] && board[r][c].guardUntil && turnCount < board[r][c].guardUntil) cell.classList.add('dorui-guard'); // 土塁で守られている駒
       if (previewCell && previewCell[0]===r && previewCell[1]===c) cell.classList.add('preview-piece');
       if (previewMoveCells.some(([pr,pc])=>pr===r&&pc===c)) cell.classList.add('preview-move');
       if (previewCapCells.some(([pr,pc])=>pr===r&&pc===c)) cell.classList.add('preview-cap');
@@ -6047,6 +6052,56 @@ function goshinKeyOf(piece) {
   return null;
 }
 
+// 土の術：潜伏／土塁を選ぶ小ポップアップ
+let doruiCaster = null; // 土塁を発動した土駒（守り付与の主体・成りカウント用）
+function chooseTsuchiJutsu(piece) {
+  const ov = document.createElement('div');
+  ov.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:200;display:flex;align-items:center;justify-content:center;';
+  const box = document.createElement('div');
+  box.style.cssText = 'background:#1b120a;border:1px solid var(--gold);border-radius:10px;padding:18px 20px;max-width:300px;text-align:center;';
+  box.innerHTML = '<div style="color:var(--gold);letter-spacing:0.1em;margin-bottom:12px;">土の術を選ぶ</div>';
+  const mk = (label, desc, fn) => {
+    const b = document.createElement('button');
+    b.style.cssText = 'display:block;width:100%;margin:6px 0;padding:11px;background:rgba(200,150,12,0.18);border:1px solid rgba(200,150,12,0.5);color:#f0e6c8;font-family:inherit;font-size:0.92rem;border-radius:6px;cursor:pointer;';
+    b.innerHTML = label + '<span style="display:block;font-size:0.7rem;opacity:0.7;margin-top:2px;">' + desc + '</span>';
+    b.onclick = () => { ov.remove(); fn(); };
+    box.appendChild(b);
+  };
+  mk('潜伏', '地中に潜り、次の自分の番に出現', () => confirmJutsu(piece, 'burrow'));
+  mk('土塁', '隣の味方1体を1ターン守る', () => startDorui(piece));
+  const c = document.createElement('button');
+  c.textContent = 'やめる';
+  c.style.cssText = 'margin-top:8px;padding:8px 18px;background:rgba(120,120,130,0.25);border:1px solid rgba(200,200,210,0.4);color:#e8e8f0;font-family:inherit;border-radius:6px;cursor:pointer;';
+  c.onclick = () => ov.remove();
+  box.appendChild(c);
+  ov.appendChild(box);
+  document.body.appendChild(ov);
+}
+// 土塁モードに入る（守る隣接の味方をタップしてもらう）
+function startDorui(piece) {
+  if (actionPhase==='bonus') { setLog('季節ボーナスの移動中は術を使えません'); return; }
+  // 土の位置を特定
+  let cr=-1, cc=-1;
+  for (let r=0;r<9;r++) for (let c=0;c<9;c++) if (board[r][c]===piece) { cr=r; cc=c; }
+  if (cr<0) return;
+  // 土自身＋隣接（8方向）の味方すべてに、相手の次の手番のあいだの守りを付与
+  const guarded = [];
+  for (let dr=-1;dr<=1;dr++) for (let dc=-1;dc<=1;dc++) {
+    const r=cr+dr, c=cc+dc;
+    if (r<0||r>=9||c<0||c>=9) continue;
+    const q = board[r][c];
+    if (q && q.team===piece.team) { q.guardUntil = turnCount + 2; guarded.push([r,c]); }
+  }
+  lastJutsuPiece = piece; // 土の術使用（麒麟への成りカウント）
+  selectedCell = null; actionMode = 'move'; showModeButtons(null);
+  try { flashEffect(guarded.length ? guarded : [[cr,cc]], 'buff', '守'); } catch(e){}
+  showEffectBanner('術','土塁');
+  setLog(guarded.length > 1
+    ? `土塁！自分と隣接する味方 計${guarded.length}体を1ターン守る（相手に取られない）`
+    : '土塁！自分を1ターン守る（隣接する味方がいませんでした）');
+  renderBoard(); updateUI();
+  nextTurn();
+}
 function createPieceEl(piece, row, col) {
   const { type, team, attr, promoted } = piece;
   const wrap = document.createElement('div');
@@ -6135,7 +6190,7 @@ function createPieceEl(piece, row, col) {
 function getJutsuType(piece) {
   if (!piece) return null;
   if (piece.type==='gogyou' && piece.attr==='木' && !piece.promoted) return 'wall';
-  if (piece.type==='gogyou' && piece.attr==='土' && !piece.promoted) return 'burrow';
+  if (piece.type==='gogyou' && piece.attr==='土' && !piece.promoted) return 'dorui'; // 土の術は土塁（潜伏は常時すり抜け移動に変更）
   if (piece.type==='gogyou' && piece.attr==='火' && piece.promoted) return 'jutsu'; // 朱雀ワープ
   if (piece.type==='gogyou' && piece.attr==='火' && !piece.promoted) {
     const key = hiKeyOf(piece);
@@ -6153,6 +6208,7 @@ function getJutsuType(piece) {
 
 // ===== ヘルプ（?ボタン）：術と合体駒の効果説明 =====
 const JUTSU_HELP = {
+  dorui: { name:'土塁', text:'土自身と隣接する味方すべてに守りを付与し、相手の次の手番のあいだ取られなくします（1ターンで消滅）。※大火・大暴発など相性無視の破壊は防げません。' },
   wall:      { name:'壁作成',   text:'盤上に壁を作ります（1体につき最大3個まで。上限に達すると一番古い壁が消えます）。壁は駒の進行をさえぎります。壊せるのは火・金の駒（朱雀・白虎・種駒も属性で判定）と陰・陽、そして王。木・水・土・青龍・玄武・麒麟は手前で止まります。' },
   hitame:    { name:'炎溜め',   text:'炎を溜めると6ターンの時限が始まります（火駒に残りカウント表示）。0になると強制「大暴発」＝周囲8マスを相性無視・敵味方問わず破壊し、火駒も消滅します（王も巻き込む）。溜めた火を動かすと炎を消費してカウントが消えます。' },
   burrow:    { name:'潜伏',     text:'土が地中に潜みます。次の自分のターン開始時にポップアップが出て、出現場所を選んで現れます。地中を進めるのは味方の駒の下と、自分が倒せる敵の下まで。<b>倒せない敵（土にとっての木・金など）や壁・合体駒の手前で止まります</b>。倒せる敵の位置に出現すれば、その駒を倒せます。' },
@@ -6215,7 +6271,7 @@ function showModeButtons(piece, row, col) {
     btnJutsuMain.style.cssText = 'padding:6px 18px;border:1px solid rgba(220,150,220,0.6);background:transparent;color:rgba(220,150,220,1);font-family:inherit;font-size:0.85rem;letter-spacing:0.1em;border-radius:2px;cursor:pointer;';
     document.getElementById('mode-btns').appendChild(btnJutsuMain);
   }
-  const jutsuLabels = { wall:'術（壁作成）', burrow:'術（潜伏）', jutsu:'術（飛翔）', kin:'術（金剛力）', byakko:'術（矛爪）', swap:'術（入替）', hyouketsu:'術（氷結）', uzu:'術（渦）', hitame:'術（炎溜め）', genbuToggle:'術（移動切替）' };
+  const jutsuLabels = { wall:'術（壁作成）', burrow:'術（潜伏）', dorui:'術（土塁）', jutsu:'術（飛翔）', kin:'術（金剛力）', byakko:'術（矛爪）', swap:'術（入替）', hyouketsu:'術（氷結）', uzu:'術（渦）', hitame:'術（炎溜め）', genbuToggle:'術（移動切替）' };
   if (jutsuType==='genbuToggle') {
     // 現在モードに応じて「切り替える先」を表示
     btnJutsuMain.textContent = piece.genbuSlide ? '術（通常へ）' : '術（スライドへ）';
@@ -6275,7 +6331,10 @@ function showModeButtons(piece, row, col) {
   } else {
     btnJutsuMain.style.display = 'inline-block';
     btnJutsuMain.style.opacity = '1';
-    btnJutsuMain.onclick = () => confirmJutsu(piece, jutsuType);
+    btnJutsuMain.onclick = () => {
+      if (jutsuType === 'dorui') { startDorui(piece); } // 土の術は土塁
+      else confirmJutsu(piece, jutsuType);
+    };
   }
 
   setActionMode('move');
@@ -6424,7 +6483,7 @@ function setActionMode(mode) {
       }
     }
   }
-  const logs = { move:'移動モードです', wall:'壁作成モード：配置先を選んでください', burrow:'術（潜伏）：駒をタップで発動', swap:'入替モード：麒麟をタップで入れ替え', jutsu:'術（飛翔）：飛翔先の壁駒を選んでください', uzu:'術（渦）：引き寄せる敵駒（周囲2マス）をタップ' };
+  const logs = { move:'移動モードです', wall:'壁作成モード：配置先を選んでください', burrow:'術（潜伏）：駒をタップで発動', dorui:'土塁：守る隣接の味方をタップ（自分自身も可）', swap:'入替モード：麒麟をタップで入れ替え', jutsu:'術（飛翔）：飛翔先の壁駒を選んでください', uzu:'術（渦）：引き寄せる敵駒（周囲2マス）をタップ' };
   setLog(logs[mode] || '');
 }
 
@@ -7613,8 +7672,9 @@ function genbuCanDefeatFusion(fusion, team) {
   return fusion.baseAttr === '金' || fusion.baseAttr === '火';
 }
 
-function genbuCanDefeat(target) {
+function genbuCanDefeat(target, attackerTeam) {
   if (!target) return false;
+  if (attackerTeam && kouzanActive && attackerTeam===kouzanActive) return true; // 鉱山：このターンは相性無視で倒せる
   if (target.type==='ten' || target.type==='mei') return true;       // 王
   if (target.type==='in' || target.type==='you') return true;        // 陰・陽（成り含む）
   if ((target.type==='gogyou' || target.type==='tane') && (target.attr==='金' || target.attr==='火')) return true; // 金・火（五行駒・種駒・成り含む）
@@ -7659,7 +7719,7 @@ function executeGenbuStraight(startR, startC, dr, dc, piece) {
     }
     const t = board[nr][nc];
     if (t) {
-      if (t.team===team || !genbuCanDefeat(t)) { setLog('その駒は倒せません（通常モードは金・火・陰陽・王のみ）。別の方向を選んでください'); return; }
+      if (t.team===team || !genbuCanDefeat(t, team)) { setLog('その駒は倒せません（通常モードは金・火・陰陽・王のみ）。別の方向を選んでください'); return; }
       board[startR][startC]=null; genbuMoveState=null; selectedCell=null;
       const captured = t;
       if (captured.type==='ten' || captured.type==='mei') {
@@ -9234,9 +9294,9 @@ function aiTryJutsu(team) {
         const victim = board[freezeT[0]][freezeT[1]];
         if (!victim) continue;
         if (isFrozen(freezeT[0], freezeT[1])) continue; // 既に凍っている相手を凍らせ直しても無意味（凍結ループ防止）
-        if (landR===gr && landC===gc && genbuCanDefeat(victim)) continue; // 隣接していて倒せる相手は、凍らせずに通常モードで捕獲する
+        if (landR===gr && landC===gc && genbuCanDefeat(victim, team)) continue; // 隣接していて倒せる相手は、凍らせずに通常モードで捕獲する
         let sc = aiPieceValue(victim) * 8;            // 価値の高い敵を止めるほど良い
-        if (genbuCanDefeat(victim)) sc += 50;         // 次の番に通常モードで倒せる＝実質的な捕獲予約
+        if (genbuCanDefeat(victim, team)) sc += 50;         // 次の番に通常モードで倒せる＝実質的な捕獲予約
         if (landR===gr && landC===gc) sc -= 10;       // 一歩も動かず触るだけは価値を下げる
         if (dangerAt(landR, landC)) sc -= 70;         // 着地点が敵の利き＝玄武を失うので避ける
         if (sc > bestScore) { bestScore = sc; best = { dr, dc, landR, landC, freezeT }; }
